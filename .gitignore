@@ -1,0 +1,20 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+build/
+
+# env / secrets
+.env
+.env.*
+!.env.example
+
+# logs / os
+*.log
+.DS_Store
+
+# scratch firmware carving artifacts (the committed rootfs lives in targets/*/rootfs)
+*.img
+*.img.gz
+*.sqfs

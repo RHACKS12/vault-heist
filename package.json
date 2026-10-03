@@ -1,0 +1,19 @@
+{
+  "name": "vault-heist",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Vault Heist — three AI safecrackers race to identify a planted CVE in firmware while the crowd bets.",
+  "workspaces": [
+    "server"
+  ],
+  "scripts": {
+    "test": "npm test --workspaces --if-present",
+    "start": "npm start --workspace @vault-heist/server",
+    "dev": "npm run dev --workspace @vault-heist/server",
+    "demo": "npm run demo --workspace @vault-heist/server"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
