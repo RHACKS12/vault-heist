@@ -5,6 +5,51 @@ See `DESIGN.md` for the overall plan and `CONTRIBUTING.md` for the workflow.
 
 ---
 
+## 2026-10-03 — Milestone 4: observer dashboard
+
+> ⚠️ **API keys still needed.** The dashboard runs entirely on the mock race, so
+> it needs no keys. But the race is still driven by **mock** providers — running
+> the REAL models (Milestone 3b) requires `GEMINI_API_KEY`, `DEEPSEEK_API_KEY`,
+> and optionally `ANTHROPIC_API_KEY`. See `.env.example`.
+
+**Shipped** (feature branch `claude/sharp-galileo-r5rmuk` → merged to `main`):
+
+- **`web/` workspace** — the observer screen, pure static HTML/CSS/ESM, no build
+  step, served by the Node server. Case-file noir skin (kraft/manila + red +
+  black, CONFIDENTIAL stamp, monospace, "CASE FILE No. XII"); on-screen renames
+  (vault → the mark, win → cracked, pool → the pot).
+- **`web/reducer.js`** — a *pure* render-state reducer (no DOM) that folds the
+  event stream into dashboard state. **8 unit tests** cover it.
+- **`web/app.js`** — DOM wiring: WebSocket (auto-reconnect) → reducer → render.
+  Three reasoning panels, discrete milestone bars (exploring → found dir →
+  opened file → submitted), the central vault visual with a crack animation on a
+  win, the pot, and a "Run demo race" button.
+- **Server static hosting + demo trigger** (`server.js`) — serves `web/` and
+  exposes `POST /api/demo/race`, which runs a mock race over the live bus/game so
+  the whole thing is watchable in a browser with no keys.
+- **Verified in a real browser** (headless Chromium): clicked "Run demo race",
+  watched phases → concurrent agents → milestones → `won` → `SETTLED`; the
+  dashboard rendered the cracked vault and DeepSeek's `/etc/shadow` finding. See
+  `docs/dashboard.png`.
+
+**Total tests: 42 green** (34 server + 8 web).
+
+**Decisions:**
+
+- **Vanilla static frontend, not React/Vite.** Consistent with the zero-build
+  server; served directly by Node; immediately runnable. State logic is isolated
+  in a pure, tested reducer, so swapping in a framework later (if wanted) is low
+  risk.
+- **Betting UI is a placeholder** (the pot shows, labelled "live betting lands in
+  Milestone 5") — the dashboard already handles `bet_placed`/`odds_update` events
+  defensively.
+
+**Next:** Milestone 3b (wire real providers — needs keys) and/or Milestone 5
+(multi-device lobby + pari-mutuel betting, which the dashboard is already stubbed
+for).
+
+---
+
 ## 2026-10-03 — Milestone 3: agent loop + judge + race (mock-tested)
 
 **Shipped** (feature branch `claude/sharp-galileo-r5rmuk` → merged to `main`):

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CASE FILE No. XII — Vault Heist</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="paper">
+    <header class="case-header">
+      <div class="case-no">CASE FILE <span>No. XII</span></div>
+      <h1 class="case-title">THE VAULT HEIST</h1>
+      <div class="case-meta">
+        <span class="round">ROUND <b id="round">1</b></span>
+        <span class="phase" id="phase">LOBBY</span>
+        <span class="conn" id="conn" title="connection">●</span>
+      </div>
+      <div class="stamp" id="stamp">CONFIDENTIAL</div>
+    </header>
+
+    <section class="stage">
+      <div class="vault" id="vault" data-state="idle">
+        <svg viewBox="0 0 220 220" aria-hidden="true">
+          <circle class="vault-body" cx="110" cy="110" r="96" />
+          <circle class="vault-ring" cx="110" cy="110" r="78" />
+          <g class="vault-dial" id="dial">
+            <circle cx="110" cy="110" r="46" />
+            <line x1="110" y1="110" x2="110" y2="70" />
+            <circle class="pin" cx="110" cy="110" r="6" />
+          </g>
+          <g class="cracks" aria-hidden="true">
+            <polyline points="110,110 60,40" /><polyline points="110,110 180,55" />
+            <polyline points="110,110 170,170" /><polyline points="110,110 45,160" />
+          </g>
+        </svg>
+        <div class="vault-label" id="vaultLabel">THE MARK</div>
+        <div class="cracked-stamp">CRACKED</div>
+      </div>
+      <div class="verdict" id="verdict"></div>
+    </section>
+
+    <section class="crew" id="crew"><!-- agent panels injected here --></section>
+
+    <footer class="takings">
+      <div class="pot">THE POT: <b id="pot">0</b> chips <span class="soon">· live betting lands in Milestone 5</span></div>
+      <button id="runRace" class="btn">▶ RUN DEMO RACE</button>
+    </footer>
+  </div>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
