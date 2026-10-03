@@ -11,5 +11,8 @@ export const REPO_ROOT = path.resolve(__dirname, '..', '..');
 /** Default firmware rootfs the agents analyze (committed in Phase 0). */
 export const DEFAULT_ROOTFS = path.join(REPO_ROOT, 'targets', 'iotgoat', 'rootfs');
 
+/** Static dashboard files (the observer screen) served by the server. */
+export const WEB_ROOT = path.join(REPO_ROOT, 'web');
+
 /** HTTP + WebSocket port. */
 export const PORT = Number(process.env.PORT ?? 3000);

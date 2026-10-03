@@ -1,0 +1,10 @@
+{
+  "name": "@vault-heist/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Vault Heist observer dashboard — static files served by @vault-heist/server (no build step).",
+  "scripts": {
+    "test": "node --test"
+  }
+}

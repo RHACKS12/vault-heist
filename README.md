@@ -9,6 +9,8 @@ spectator game built for RowdyHacks XII.
 > exploit or recover a live secret. The target is OWASP IoTGoat — firmware
 > published specifically for this kind of authorized analysis.
 
+![The observer dashboard after a race](docs/dashboard.png)
+
 ## How it works
 
 Players join on their phones, each places one bet on an agent, bets **lock**,
@@ -64,8 +66,8 @@ npm run race         # start + run a full MOCK race over the real rootfs (no API
 | Milestone 1 — event bus + WebSocket fan-out + state machine | ✅ done |
 | Milestone 2 — read-only firmware sandbox tools | ✅ done |
 | Milestone 3 — agent loop + judge + race (mock-tested) | ✅ done |
-| Milestone 3b — wire real providers (Gemini / DeepSeek / Haiku) | ⬜ next (needs API keys) |
-| Milestone 4 — observer dashboard | ⬜ |
+| Milestone 4 — observer dashboard (served + mock-race demo) | ✅ done |
+| Milestone 3b — wire real providers (Gemini / DeepSeek / Haiku) | ⬜ **needs API keys** (see `.env.example`) |
 | Milestone 5 — multi-device lobby + pari-mutuel betting | ⬜ |
 | Milestone 6 — ElevenLabs announcer | ⬜ |
 | Milestone 7 — record & replay | ⬜ |

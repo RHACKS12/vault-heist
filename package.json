@@ -5,7 +5,8 @@
   "type": "module",
   "description": "Vault Heist — three AI safecrackers race to identify a planted CVE in firmware while the crowd bets.",
   "workspaces": [
-    "server"
+    "server",
+    "web"
   ],
   "scripts": {
     "test": "npm test --workspaces --if-present",
