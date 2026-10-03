@@ -38,6 +38,7 @@ vault-heist/
    │  ├─ bus.js              #   the event bus (single source of truth)
    │  ├─ game.js             #   LOBBY→BETTING→LOCKED→RACING→SETTLED state machine
    │  ├─ sandbox.js          #   read-only firmware tools (list_dir/read_file/grep/strings)
+   │  ├─ agents/             #   the crew: session, runner, judge, race, providers
    │  ├─ server.js           #   HTTP + WebSocket fan-out
    │  └─ index.js            #   entry point
    └─ test/                  #   node:test suite
@@ -52,6 +53,7 @@ npm install          # install workspace deps
 npm test             # run the full suite
 npm start            # start the server (http://localhost:3000, WebSocket + /health)
 npm run demo         # start + walk one scripted phase cycle so you can watch events
+npm run race         # start + run a full MOCK race over the real rootfs (no API keys)
 ```
 
 ## Status
@@ -61,7 +63,8 @@ npm run demo         # start + walk one scripted phase cycle so you can watch ev
 | Phase 0 — firmware extracted + answer key verified | ✅ done |
 | Milestone 1 — event bus + WebSocket fan-out + state machine | ✅ done |
 | Milestone 2 — read-only firmware sandbox tools | ✅ done |
-| Milestone 3 — agent runners (Gemini / DeepSeek / Haiku) + judge | ⬜ next |
+| Milestone 3 — agent loop + judge + race (mock-tested) | ✅ done |
+| Milestone 3b — wire real providers (Gemini / DeepSeek / Haiku) | ⬜ next (needs API keys) |
 | Milestone 4 — observer dashboard | ⬜ |
 | Milestone 5 — multi-device lobby + pari-mutuel betting | ⬜ |
 | Milestone 6 — ElevenLabs announcer | ⬜ |
