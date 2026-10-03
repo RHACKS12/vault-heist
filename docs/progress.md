@@ -5,6 +5,54 @@ See `DESIGN.md` for the overall plan and `CONTRIBUTING.md` for the workflow.
 
 ---
 
+## 2026-10-03 — Milestone 3: agent loop + judge + race (mock-tested)
+
+**Shipped** (feature branch `claude/sharp-galileo-r5rmuk` → merged to `main`):
+
+- **AgentSession** (`agents/session.js`) — one per crew member, wrapping the
+  shared read-only sandbox. Enforces a per-agent step budget and emits the
+  `exploring` → `found_dir` → `opened_file` milestones (monotonic, fire-once) by
+  watching which paths each agent touches vs. the round's target.
+- **AgentRunner** (`agents/runner.js`) — provider-agnostic tool-use loop over a
+  normalized message history. Emits reasoning + `submitted`; a refusal, a wrong
+  answer, budget exhaustion, or another agent winning all end cleanly.
+- **Judge** (`agents/judge.js`) — a submission is correct iff it names an
+  accepted file (path or basename) or a specific string (hash/user/port/sink);
+  generic keywords alone don't win.
+- **Race** (`agents/race.js`) — runs the crew concurrently; the first correct
+  submission sets the winner, emits `won`, and settles the game. Refusals/no-win
+  handled.
+- **Tools / prompts / answer / crew** — the 5 tool schemas, the authorized
+  identification-only prompts, answer-key loading, and the 3-member roster.
+- **Mock providers** (`agents/providers/mock.js`) — solver / wanderer / refuser /
+  second-guess, so the whole pipeline runs and is tested with no API keys.
+- **Real provider stubs** (`gemini.js` / `deepseek.js` / `haiku.js`) — interface
+  in place, each documents its SDK mapping, throws `NotWiredError` until 3b.
+- **18 new tests** (34 total, all green): judge per round, session milestones +
+  budget, runner (solve / refuse / stop), and the full race (solver beats
+  wanderers, refuser handled, no-winner case, single-winner guarantee).
+- **`npm run race`** drives a full mock race over the real rootfs; verified the
+  event stream end-to-end (phases → concurrent agents → milestones → `won` →
+  `SETTLED`, winner `deepseek`).
+
+**Decisions:**
+
+- **Mock-first.** The pipeline is fully exercised offline; real SDK adapters are
+  isolated behind the provider interface so wiring them can't destabilize the
+  tested core.
+- **One shared sandbox, per-agent sessions** (as discussed) — the rootfs is
+  read-only so no copies; isolation of *behavior* (attribution, milestones,
+  budget) lives in `AgentSession`.
+- **`submit` is a tool.** Its result tells the model whether it won, so a wrong
+  guess just continues the loop — no separate submission channel.
+
+**Next — Milestone 3b:** implement the three real provider adapters against their
+SDKs (read the claude-api skill before the Haiku one), add keys to `.env`, and
+swap them into the crew in place of the mocks. Then Milestone 4 (observer
+dashboard) can consume the already-working event stream.
+
+---
+
 ## 2026-10-03 — Milestones 1 & 2: event bus + state machine + firmware sandbox
 
 **Shipped** (feature branch `claude/sharp-galileo-r5rmuk` → merged to `main`):

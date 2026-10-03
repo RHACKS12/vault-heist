@@ -9,6 +9,7 @@
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
     "demo": "node src/index.js --demo",
+    "race": "node src/index.js --race",
     "test": "node --test"
   },
   "dependencies": {
