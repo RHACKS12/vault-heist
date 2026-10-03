@@ -1,0 +1,58 @@
+{
+  "target": "iotgoat",
+  "source": "OWASP IoTGoat — deliberately insecure OpenWrt-based firmware",
+  "note": "IoTGoat challenges are planted OWASP IoT Top 10 issues, not CVEs. After extraction, run the verify commands in README.md to confirm every path/string below exists in YOUR extracted rootfs before trusting the judge.",
+  "defaultRound": "hardcoded-credentials",
+
+  "rounds": {
+    "hardcoded-credentials": {
+      "challenge": "OWASP IoT #1 — Weak, Guessable, or Hardcoded Passwords",
+      "type": "hardcoded_credential",
+      "file": "/etc/shadow",
+      "function": null,
+      "answer_summary": "Hardcoded credentials baked into the firmware: user 'iotgoatuser' with password '7ujMko0vizxv', stored as an MD5 ($1$) hash in /etc/shadow.",
+      "accept": {
+        "files": ["/etc/shadow", "etc/shadow"],
+        "strings": ["iotgoatuser", "7ujMko0vizxv", "$1$"],
+        "keywords": [
+          "hardcoded password",
+          "hardcoded credential",
+          "hardcoded credentials",
+          "weak password",
+          "etc/shadow",
+          "shadow file"
+        ]
+      },
+      "why_good_for_the_race": "Rock-solid ground truth findable by all three strategies: grep ($1$ / iotgoatuser), filesystem-walk (open /etc/shadow), and strings. This is the recommended default round."
+    },
+
+    "shellback-backdoor": {
+      "challenge": "OWASP IoT #2 — Insecure Network Services (backdoor bind shell)",
+      "type": "backdoor",
+      "file": "/usr/bin/shellback",
+      "function": null,
+      "answer_summary": "A 'shellback' daemon is started at boot and listens on TCP 5515, handing a root shell to anyone who connects.",
+      "accept": {
+        "files": ["/usr/bin/shellback", "usr/bin/shellback", "shellback"],
+        "strings": ["shellback", "5515"],
+        "keywords": ["backdoor", "bind shell", "root shell", "port 5515", "tcp 5515"]
+      },
+      "VERIFY": "Confirm the exact binary path on your extracted rootfs: `grep -rIl shellback targets/iotgoat/rootfs` and `find targets/iotgoat/rootfs -name 'shellback'`. Update 'file' if it differs."
+    },
+
+    "command-injection": {
+      "challenge": "OWASP IoT #3 — Insecure Ecosystem Interfaces (command injection)",
+      "type": "command_injection",
+      "file": "/usr/lib/lua/luci/controller/iotgoat/iotgoat.lua",
+      "function": null,
+      "endpoint": "/cgi-bin/luci/admin/iotgoat/webcmd",
+      "answer_summary": "A hidden LuCI 'developer diagnostics' page passes user input to a shell, giving command injection at /cgi-bin/luci/admin/iotgoat/webcmd.",
+      "accept": {
+        "files": ["iotgoat.lua", "controller/iotgoat"],
+        "strings": ["webcmd", "cmdinject", "os.execute", "io.popen", "luci.sys"],
+        "keywords": ["command injection", "webcmd", "diagnostics", "os.execute", "popen"]
+      },
+      "VERIFY": "Confirm the controller path on your rootfs: `grep -rIl 'webcmd\\|cmdinject' targets/iotgoat/rootfs`. The LuCI controller lives under /usr/lib/lua/luci/controller/; update 'file' to the real path."
+    }
+  }
+}
