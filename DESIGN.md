@@ -229,6 +229,14 @@ Suggest **React + Vite**; a thin `useEventStream()` hook reduces the WS stream i
 
 **Recommendation:** build the pipeline against **IoTGoat** (deliberately vulnerable, guaranteed clean extract, documented planted vulns, models never refuse) as the safety net, then record your hero run on **Tenda AC15** (a *real* documented CVE in shipping firmware — a far stronger pitch). Because the pitch is recorded, one clean Tenda run in testing makes stage reliability a non-issue.
 
+> **Status — IoTGoat done.** Extraction + answer key are complete and committed:
+> `targets/iotgoat/rootfs/` (OpenWrt 18.06.2 SquashFS, ~13 MB / 1031 files),
+> `targets/iotgoat/answer.json` (verified against the rootfs), plus
+> `targets/iotgoat/extract.sh` to rebuild it. The exact IoTGoat steps and paths
+> live in `targets/iotgoat/README.md`; the generic recipe below is for adding
+> Tenda AC15 or another target later. Phase 0 step 3 (sandbox-root locking) is
+> runtime code built in milestone 2 (`sandbox.ts`, §5.1).
+
 ### Extraction steps (run once, commit the output)
 
 ```bash

@@ -1,0 +1,10 @@
+Package: shellback
+Version: 0.1-1
+Depends: libc
+Source: package/network/services/shell
+License: CC0-1.0
+Section: utils
+Maintainer: John Doe <john.doe@example.com>
+Architecture: i386_pentium4
+Installed-Size: 1834
+Description:  This is some dummy application.

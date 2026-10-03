@@ -1,0 +1,12 @@
+Package: wpa-supplicant
+Version: 2018-05-21-62566bc2-5
+Depends: libc
+Conflicts: wpad, wpad-mesh-openssl, wpad-mesh-wolfssl, wpad-mini, wpad-openssl, wpad-wolfssl
+Provides: wpa-supplicant
+Source: package/network/services/hostapd
+License: BSD-3-Clause
+Section: net
+Maintainer: Felix Fietkau <nbd@nbd.name>
+Architecture: i386_pentium4
+Installed-Size: 270526
+Description:  WPA Supplicant

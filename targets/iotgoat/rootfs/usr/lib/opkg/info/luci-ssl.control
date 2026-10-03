@@ -1,0 +1,9 @@
+Package: luci-ssl
+Version: git-19.020.41695-6f6641d-1
+Depends: libc, luci, libustream-mbedtls, px5g
+Source: feeds/luci/collections/luci-ssl
+License: Apache-2.0
+Section: luci
+Architecture: all
+Installed-Size: 106
+Description:  LuCI with HTTPS support (mbedTLS as SSL backend)

@@ -1,0 +1,11 @@
+Package: kmod-pps
+Version: 4.14.95-1
+Depends: kernel (=4.14.95-1-54ec8a9ccbf5a1a2c6108c26c1a025ce)
+Source: package/kernel/linux
+License: GPL-2.0
+Section: kernel
+Architecture: i386_pentium4
+Installed-Size: 4565
+Description:  PPS (Pulse Per Second) is a special pulse provided by some GPS
+ antennae. Userland can use it to get a high-precision time
+ reference.

@@ -1,0 +1,10 @@
+Package: mkf2fs
+Version: 1.10.0-1
+Depends: libc, libf2fs
+Source: package/utils/f2fs-tools
+License: GPLv2
+Section: utils
+Maintainer: Felix Fietkau <nbd@nbd.name>
+Architecture: i386_pentium4
+Installed-Size: 10550
+Description:  Utility for creating a Flash-Friendly File System (F2FS)

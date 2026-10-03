@@ -1,0 +1,2 @@
+/etc/modules.d/20-natsemi
+/lib/modules/4.14.95/natsemi.ko

@@ -1,0 +1,10 @@
+Package: libnettle
+Version: 3.4-1
+Depends: libc, libgmp
+Source: package/libs/nettle
+License: GPL-2.0+
+LicenseFiles: COPYING
+Section: libs
+Architecture: i386_pentium4
+Installed-Size: 230703
+Description:  GNU crypto library
