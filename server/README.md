@@ -18,10 +18,30 @@ PORT=4000 npm start
 | `bus.js` | `EventBus` — publish/subscribe + a ring buffer of recent events. The single source of truth. |
 | `game.js` | `Game` — the phase state machine; every transition publishes a `phase_change`. |
 | `sandbox.js` | `Sandbox` — the four read-only firmware tools, jailed to one rootfs. |
-| `server.js` | `createServer()` — HTTP `/health` + WebSocket fan-out of the event stream. |
-| `index.js` | Wires it together and starts listening. |
-| `config.js` | Paths (`DEFAULT_ROOTFS`) and `PORT`. |
+| `server.js` | `createServer()` — HTTP `/health`, command routes, WebSocket fan-out, and static hosting of the dashboard + player screen. |
+| `betting.js` | `Betting` — the pari-mutuel pool (join, bet, odds, lock, settle). |
+| `index.js` | Wires it together, exposes the command API, and starts listening. |
+| `config.js` | Paths (`DEFAULT_ROOTFS`, `WEB_ROOT`) and `PORT`. |
 | `agents/` | The crew — see below. |
+
+## Command API (Milestone 5)
+
+The lobby is driven over HTTP; live state fans out over the WebSocket.
+
+| Route | Body | Purpose |
+| --- | --- | --- |
+| `GET /api/state` | — | current phase, round, pot, odds, totals, counts, players |
+| `POST /api/join` | `{name}` | join the lobby → `{playerId, balance}` (500 starting chips) |
+| `POST /api/bet` | `{playerId, agent, amount}` | place one bet (only while `BETTING_OPEN`) |
+| `POST /api/host/open` | `{token?}` | open betting (`LOBBY`/`SETTLED` → `BETTING_OPEN`) |
+| `POST /api/host/lock` | `{token?}` | lock bets, run the race, settle the pot |
+| `POST /api/host/reset` | `{token?}` | `SETTLED` → `LOBBY` for a new round |
+| `POST /api/demo/race` | — | full auto demo: bots join + bet, then lock + race |
+
+Host routes are gated by `HOST_TOKEN` when it is set in the environment.
+Pari-mutuel: `odds(agent) = pot / stakeOn(agent)`; the winner's backers split the
+whole pot in proportion to their stake; if nobody backed the winner (or no agent
+cracked it), every bet is refunded.
 
 ## Agents (the crew)
 

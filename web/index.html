@@ -43,8 +43,17 @@
     <section class="crew" id="crew"><!-- agent panels injected here --></section>
 
     <footer class="takings">
-      <div class="pot">THE POT: <b id="pot">0</b> chips <span class="soon">· live betting lands in Milestone 5</span></div>
-      <button id="runRace" class="btn">▶ RUN DEMO RACE</button>
+      <div class="lobby">
+        <span class="players">CREW OF BETTORS: <b id="players">0</b></span>
+        <span class="pot">THE POT: <b id="pot">0</b></span>
+        <span class="join-hint">place your cut at <code id="joinUrl">/play.html</code></span>
+      </div>
+      <div class="host">
+        <button id="hostOpen" class="btn">OPEN BETTING</button>
+        <button id="hostLock" class="btn">LOCK &amp; START</button>
+        <button id="hostReset" class="btn">NEW ROUND</button>
+        <button id="runRace" class="btn ghost">▶ auto demo</button>
+      </div>
     </footer>
   </div>
 

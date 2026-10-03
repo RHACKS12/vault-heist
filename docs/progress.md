@@ -5,6 +5,50 @@ See `DESIGN.md` for the overall plan and `CONTRIBUTING.md` for the workflow.
 
 ---
 
+## 2026-10-03 — Milestone 5: multi-device lobby + pari-mutuel betting
+
+> ⚠️ **API keys still needed** for the real models (Milestone 3b):
+> `GEMINI_API_KEY`, `DEEPSEEK_API_KEY`, `ANTHROPIC_API_KEY`. The betting lobby and
+> the race run on mocks without them. See `.env.example`.
+
+**Shipped** (feature branch `claude/sharp-galileo-r5rmuk` → merged to `main`):
+
+- **`server/src/betting.js`** — the pari-mutuel pool. Players join (500 starting
+  chips), place ONE bet per round, odds are `pot / stakeOn(agent)`, the winner's
+  backers split the whole pot in proportion to their stake, and if nobody backed
+  the winner (or no agent cracked it) every bet is refunded. **8 tests.**
+- **Command API** (generalized routing in `server.js`, handlers in `index.js`):
+  `GET /api/state`, `POST /api/join`, `POST /api/bet`, and host routes
+  `/api/host/open|lock|reset` (gated by `HOST_TOKEN` when set). `host/lock` locks
+  betting, runs the race, and settles the pot.
+- **Player screen** (`web/play.html` + `web/play.js`) — join on a phone, pick a
+  safecracker, place chips, watch, and see your payout. Per-device identity in
+  `localStorage`; balance credited once on settle (guarded against backlog
+  replay).
+- **Dashboard** now shows live odds per agent, bets/chips per agent, the pot, the
+  lobby size, host controls (open / lock & start / new round), and the payout
+  line on a win. The reducer gained betting state (**4 new tests**).
+- The pre-race lobby flow matches the plan: players bet → host locks → race.
+  The flow was verified over HTTP (live odds, double-bet rejection, correct
+  payout) and in a real browser (dashboard lobby + player screen screenshots:
+  `docs/dashboard-lobby.png`, `docs/player.png`).
+
+**Total tests: 53 green** (41 server + 12 web).
+
+**Decisions:**
+
+- **HTTP commands + WebSocket fan-out.** Clients POST actions; every client
+  (including the sender) sees the result via the one event stream — no second
+  realtime channel. Consistent with the existing pattern.
+- **Starting chips = 500** so bets have room (and the demo's 300-chip pot works).
+- **Host-controlled lock** (a button), per the earlier design discussion — more
+  robust than auto-detecting "everyone has bet" when players keep joining.
+
+**Next:** Milestone 3b (real providers — needs keys), Milestone 6 (ElevenLabs
+announcer), or Milestone 7 (record & replay).
+
+---
+
 ## 2026-10-03 — Milestone 4: observer dashboard
 
 > ⚠️ **API keys still needed.** The dashboard runs entirely on the mock race, so

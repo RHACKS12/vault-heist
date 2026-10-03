@@ -71,3 +71,32 @@ test('phase_change to SETTLED with a winner is captured', () => {
   assert.equal(s.winner, 'haiku');
   assert.equal(s.pot, 300);
 });
+
+test('odds_update folds pot, odds, totals, counts, and open flag', () => {
+  const s = initialState();
+  reduce(s, { type: 'odds_update', payload: { pot: 200, odds: { deepseek: 2 }, totals: { deepseek: 100 }, counts: { deepseek: 1 }, open: true }, round: 1 });
+  assert.equal(s.pot, 200);
+  assert.equal(s.odds.deepseek, 2);
+  assert.equal(s.totals.deepseek, 100);
+  assert.equal(s.bettingOpen, true);
+});
+
+test('player_joined tracks the lobby size', () => {
+  const s = initialState();
+  reduce(s, { type: 'player_joined', payload: { players: 3 } });
+  assert.equal(s.players, 3);
+});
+
+test('settled stores the payouts', () => {
+  const s = initialState();
+  const payouts = [{ playerId: 'a', payout: 120, won: true }];
+  reduce(s, { type: 'settled', payload: { winner: 'deepseek', pot: 200, payouts } });
+  assert.deepEqual(s.payouts, payouts);
+  assert.equal(s.winner, 'deepseek');
+});
+
+test('phase_change to BETTING_OPEN opens betting', () => {
+  const s = initialState();
+  reduce(s, { type: 'phase_change', payload: { to: 'BETTING_OPEN' }, round: 1 });
+  assert.equal(s.bettingOpen, true);
+});

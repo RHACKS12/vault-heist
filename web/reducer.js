@@ -20,7 +20,10 @@ function freshAgent(def) {
 export function initialState() {
   const agents = {};
   for (const def of CREW) agents[def.id] = freshAgent(def);
-  return { phase: 'LOBBY', round: 1, agents, winner: null, pot: 0, odds: {} };
+  return {
+    phase: 'LOBBY', round: 1, agents, winner: null,
+    pot: 0, odds: {}, totals: {}, counts: {}, players: 0, bettingOpen: false, payouts: null,
+  };
 }
 
 function resetRound(state) {
@@ -28,6 +31,10 @@ function resetRound(state) {
   state.winner = null;
   state.pot = 0;
   state.odds = {};
+  state.totals = {};
+  state.counts = {};
+  state.bettingOpen = false;
+  state.payouts = null;
 }
 
 /**
@@ -52,6 +59,7 @@ export function reduce(state, event) {
       const to = event.payload?.to;
       if (to === 'LOBBY') resetRound(state);
       state.phase = to ?? state.phase;
+      state.bettingOpen = to === 'BETTING_OPEN';
       if (event.round) state.round = event.round;
       if (event.payload?.pot != null) state.pot = event.payload.pot;
       if (to === 'SETTLED' && event.payload?.winner) state.winner = event.payload.winner;
@@ -74,11 +82,23 @@ export function reduce(state, event) {
       state.winner = event.agent ?? state.winner;
       break;
     case 'refused': if (a) a.refused = true; break;
-    // --- betting (Milestone 5) — handled defensively now ---
-    case 'bet_placed':
+    // --- betting (Milestone 5) ---
+    case 'player_joined':
+      state.players = event.payload?.players ?? state.players + 1;
+      break;
     case 'odds_update':
       if (event.payload?.pot != null) state.pot = event.payload.pot;
       if (event.payload?.odds) state.odds = event.payload.odds;
+      if (event.payload?.totals) state.totals = event.payload.totals;
+      if (event.payload?.counts) state.counts = event.payload.counts;
+      if (event.payload?.open != null) state.bettingOpen = event.payload.open;
+      break;
+    case 'bet_placed':
+      break; // odds_update follows with authoritative totals
+    case 'settled':
+      state.payouts = event.payload?.payouts ?? state.payouts;
+      if (event.payload?.pot != null) state.pot = event.payload.pot;
+      if (event.payload?.winner) state.winner = event.payload.winner;
       break;
     default:
       break;
