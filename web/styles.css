@@ -110,6 +110,39 @@ body {
 .btn:hover { background: var(--red); }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+/* ---------- betting (M5) ---------- */
+.lobby { display: flex; gap: 18px; align-items: baseline; flex-wrap: wrap; letter-spacing: 1px; font-size: 13px; }
+.lobby b { color: var(--red); font-size: 18px; }
+.join-hint { color: var(--ink-soft); }
+.join-hint code { background: var(--ink); color: var(--kraft); padding: 1px 6px; border-radius: 2px; }
+.host { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn.ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--ink); }
+.btn.ghost:hover { background: var(--ink); color: var(--kraft); }
+.agent-odds { margin-left: auto; text-align: center; line-height: 1.1; }
+.agent-odds b { color: var(--red); font-size: 15px; display: block; }
+.agent-odds span { font-size: 8px; letter-spacing: 1px; color: var(--ink-soft); }
+.agent-head .agent-status { margin-left: 8px; }
+.agent-bets { padding: 4px 12px 0; font-size: 11px; color: var(--ink-soft); letter-spacing: 1px; }
+.verdict .pay { color: var(--ink); font-size: 14px; display: block; margin-top: 4px; }
+
+/* ---------- player screen ---------- */
+.play { max-width: 460px; margin: 0 auto; padding: 20px 16px 48px; }
+.play .card { background: var(--card); border: 2px solid var(--ink); border-radius: 4px; box-shadow: 3px 3px 0 rgba(0,0,0,0.25); padding: 18px; margin-top: 16px; }
+.play h2 { margin: 0 0 12px; letter-spacing: 3px; }
+.play .field { width: 100%; font-family: inherit; font-size: 16px; padding: 10px; border: 2px solid var(--ink); border-radius: 3px; background: #efe2bd; }
+.play .picks { display: grid; gap: 8px; margin: 12px 0; }
+.pick { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 2px solid var(--ink); border-radius: 3px; background: #e7d9b0; cursor: pointer; font-family: inherit; font-size: 15px; text-align: left; }
+.pick .pick-odds { margin-left: auto; color: var(--red); font-weight: bold; }
+.pick.sel { background: var(--ink); color: var(--kraft); }
+.pick.sel .pick-odds { color: var(--kraft); }
+.play .row { display: flex; gap: 10px; align-items: center; margin: 10px 0; }
+.play label { letter-spacing: 1px; font-size: 13px; }
+.balance { letter-spacing: 1px; } .balance b { color: var(--red); font-size: 20px; }
+.note { letter-spacing: 1px; font-size: 13px; color: var(--ink-soft); min-height: 20px; }
+.result { font-size: 18px; letter-spacing: 1px; }
+.result.win { color: var(--go); font-weight: bold; }
+.result.lose { color: var(--red); }
+
 @media (max-width: 760px) {
   .crew { grid-template-columns: 1fr; }
   .vault { width: 60vw; }

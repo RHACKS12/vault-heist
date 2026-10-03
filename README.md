@@ -11,6 +11,11 @@ spectator game built for RowdyHacks XII.
 
 ![The observer dashboard after a race](docs/dashboard.png)
 
+The betting lobby (live pari-mutuel odds) and the phone player screen:
+
+![Betting lobby](docs/dashboard-lobby.png)
+![Player screen](docs/player.png)
+
 ## How it works
 
 Players join on their phones, each places one bet on an agent, bets **lock**,
@@ -53,9 +58,9 @@ Requires Node.js ≥ 22.
 ```bash
 npm install          # install workspace deps
 npm test             # run the full suite
-npm start            # start the server (http://localhost:3000, WebSocket + /health)
+npm start            # dashboard at http://localhost:3000/ , player screen at /play.html
 npm run demo         # start + walk one scripted phase cycle so you can watch events
-npm run race         # start + run a full MOCK race over the real rootfs (no API keys)
+npm run race         # start + run a full auto demo: bots join, bet, lock, and race
 ```
 
 ## Status
@@ -67,8 +72,8 @@ npm run race         # start + run a full MOCK race over the real rootfs (no API
 | Milestone 2 — read-only firmware sandbox tools | ✅ done |
 | Milestone 3 — agent loop + judge + race (mock-tested) | ✅ done |
 | Milestone 4 — observer dashboard (served + mock-race demo) | ✅ done |
+| Milestone 5 — multi-device lobby + pari-mutuel betting | ✅ done |
 | Milestone 3b — wire real providers (Gemini / DeepSeek / Haiku) | ⬜ **needs API keys** (see `.env.example`) |
-| Milestone 5 — multi-device lobby + pari-mutuel betting | ⬜ |
 | Milestone 6 — ElevenLabs announcer | ⬜ |
 | Milestone 7 — record & replay | ⬜ |
 

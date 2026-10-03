@@ -1,65 +1,123 @@
-// Entry point: wire the bus, game, and sandbox together, serve the dashboard,
-// and start the server.
+// Entry point: wire bus, game, sandbox, and betting together, expose the command
+// API, serve the dashboard + player screen, and start the server.
 //
-//   npm start            -> start the server + serve the observer dashboard at /
-//   npm run demo         -> start + walk one scripted phase cycle
-//   npm run race         -> start + run a full MOCK race over the real rootfs
+//   npm start            -> server + dashboard (/) + player screen (/play.html)
+//   npm run demo         -> a scripted phase cycle
+//   npm run race         -> a full auto demo: bots join, bet, lock, and race
 //
-// The dashboard's "Run demo race" button hits POST /api/demo/race, which runs
-// the same mock race so you can watch the whole stream in the browser with no
-// API keys. Real models arrive in Milestone 3b (see docs/progress.md).
+// Hosted flow (multi-device):
+//   players  -> POST /api/join, POST /api/bet
+//   host     -> POST /api/host/open, /api/host/lock (runs the race), /api/host/reset
+// Real agent models arrive in Milestone 3b (keys in .env); today the race runs
+// on mock providers.
 import { EventBus } from './bus.js';
 import { Game } from './game.js';
 import { Sandbox } from './sandbox.js';
+import { Betting } from './betting.js';
 import { createServer } from './server.js';
 import { DEFAULT_ROOTFS, WEB_ROOT, PORT } from './config.js';
 import { loadAnswerKey, getRound } from './agents/answer.js';
 import { Race } from './agents/race.js';
 import { mockSolver, mockWanderer } from './agents/providers/mock.js';
 
+const AGENTS = ['gemini', 'deepseek', 'haiku'];
+
 const bus = new EventBus();
 const game = new Game({ bus });
 const sandbox = new Sandbox(DEFAULT_ROOTFS);
+const betting = new Betting({ bus, agents: AGENTS });
+
+const answerKey = await loadAnswerKey('iotgoat');
+const round = getRound(answerKey); // default round: hardcoded-credentials
 
 let racing = false;
 
-/**
- * Run one mock race over the live bus/game so every connected client sees it.
- * Resets a finished game back to the lobby first. Guards against overlap.
- */
-async function runMockRace() {
-  if (racing) throw new Error('a race is already in progress');
-  if (game.phase === 'SETTLED') game.reset();        // SETTLED -> LOBBY
-  if (game.phase !== 'LOBBY') throw new Error(`cannot start a race from phase ${game.phase}`);
+/** Build the race for this round. Mock providers today; real ones in 3b. */
+function buildRace() {
+  return new Race({
+    bus, game, sandbox, round,
+    agents: [
+      { agent: 'gemini', strategy: 'grep', provider: mockWanderer({ steps: 4 }) },
+      { agent: 'deepseek', strategy: 'walk', provider: mockSolver({ file: round.file, finding: round.answer_summary }) },
+      { agent: 'haiku', strategy: 'binary', provider: mockWanderer({ steps: 5 }) },
+    ],
+  });
+}
+
+/** RACING -> run the crew -> settle the pot on the winner. */
+async function startRaceAndSettle() {
+  if (racing) throw httpError('a race is already in progress', 409);
   racing = true;
   try {
-    const answerKey = await loadAnswerKey('iotgoat');
-    const round = getRound(answerKey); // default round: hardcoded-credentials
-    game.openBetting();
-    game.lockBets({ pot: 300 });
     game.startRace();
-    const race = new Race({
-      bus, game, sandbox, round,
-      agents: [
-        { agent: 'gemini', strategy: 'grep', provider: mockWanderer({ steps: 4 }) },
-        { agent: 'deepseek', strategy: 'walk', provider: mockSolver({ file: round.file, finding: round.answer_summary }) },
-        { agent: 'haiku', strategy: 'binary', provider: mockWanderer({ steps: 5 }) },
-      ],
-    });
-    const result = await race.run();
-    return { winner: result.winner };
+    const { winner } = await buildRace().run();
+    betting.settle(winner);
+    return { winner };
   } finally {
     racing = false;
   }
 }
 
-const server = createServer({ bus, game, sandbox, port: PORT, webRoot: WEB_ROOT, onDemoRace: runMockRace });
+function httpError(message, status) { const e = new Error(message); e.status = status; return e; }
+function requireHost(body) {
+  if (process.env.HOST_TOKEN && body?.token !== process.env.HOST_TOKEN) throw httpError('bad host token', 403);
+}
+function requirePhase(expected) {
+  if (game.phase !== expected) throw httpError(`action not allowed in phase ${game.phase}`, 409);
+}
 
+/** Full auto demo: bots join + bet, then lock + race (so the pot is populated). */
+async function runDemoRace() {
+  if (game.phase === 'SETTLED') { game.reset(); betting.reset(game.round); }
+  if (game.phase !== 'LOBBY') throw httpError(`cannot start from phase ${game.phase}`, 409);
+  game.openBetting(); betting.openRound();
+  for (const [name, agent, amount] of [['Ava', 'deepseek', 120], ['Ben', 'gemini', 80], ['Cy', 'haiku', 100]]) {
+    const { playerId } = betting.join(name);
+    betting.placeBet(playerId, agent, amount);
+  }
+  game.lockBets({ pot: betting.pot(), odds: betting.odds() });
+  betting.lock();
+  return startRaceAndSettle();
+}
+
+const routes = {
+  'GET /api/state': async () => ({
+    phase: game.phase, round: game.round, agents: AGENTS, ...betting.snapshot(),
+  }),
+  'POST /api/join': async (body) => betting.join(body.name),
+  'POST /api/bet': async (body) => {
+    requirePhase('BETTING_OPEN');
+    return betting.placeBet(body.playerId, body.agent, body.amount);
+  },
+  'POST /api/host/open': async (body) => {
+    requireHost(body);
+    if (game.phase === 'SETTLED') { game.reset(); betting.reset(game.round); }
+    requirePhase('LOBBY');
+    game.openBetting(); betting.openRound();
+    return { phase: game.phase };
+  },
+  'POST /api/host/lock': async (body) => {
+    requireHost(body);
+    requirePhase('BETTING_OPEN');
+    game.lockBets({ pot: betting.pot(), odds: betting.odds() });
+    betting.lock();
+    return startRaceAndSettle();
+  },
+  'POST /api/host/reset': async (body) => {
+    requireHost(body);
+    requirePhase('SETTLED');
+    game.reset(); betting.reset(game.round);
+    return { phase: game.phase };
+  },
+  'POST /api/demo/race': async () => runDemoRace(),
+};
+
+const server = createServer({ bus, game, sandbox, betting, port: PORT, webRoot: WEB_ROOT, routes });
 const boundPort = await server.listen();
-console.log(`[vault-heist] dashboard: http://localhost:${boundPort}/   (WebSocket + /health)`);
+console.log(`[vault-heist] dashboard: http://localhost:${boundPort}/`);
+console.log(`[vault-heist] player:    http://localhost:${boundPort}/play.html`);
 console.log(`[vault-heist] rootfs:    ${sandbox.root}`);
 
-// mirror every event to the console so the bus is visible without a client
 bus.subscribe((e) => console.log(`  event #${e.seq} ${e.source}/${e.type}`, JSON.stringify(e.payload)));
 
 if (process.argv.includes('--demo')) {
@@ -70,12 +128,11 @@ if (process.argv.includes('--demo')) {
   await wait(400); game.startRace();
   await wait(400); game.settle({ winner: null });
   await wait(400); game.reset();
-  console.log('[vault-heist] demo cycle complete; server still running. Ctrl+C to stop.');
 }
 
 if (process.argv.includes('--race')) {
-  console.log('[vault-heist] running a mock race over the real rootfs...');
-  const result = await runMockRace();
+  console.log('[vault-heist] running a full auto demo race (bots bet, then race)...');
+  const result = await runDemoRace();
   console.log(`[vault-heist] race winner: ${result.winner ?? '(none)'}`);
   console.log('[vault-heist] server still running. Ctrl+C to stop.');
 }

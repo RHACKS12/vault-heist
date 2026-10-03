@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Place Your Cut — Vault Heist</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="paper play">
+    <header class="case-header">
+      <div class="case-no">CASE FILE <span>No. XII</span></div>
+      <h1 class="case-title" style="font-size:28px;letter-spacing:3px">PLACE YOUR CUT</h1>
+      <div class="case-meta">
+        <span class="phase" id="phase">LOBBY</span>
+        <span>POT <b id="pot">0</b></span>
+        <span class="conn" id="conn">●</span>
+      </div>
+    </header>
+
+    <!-- join -->
+    <section class="card" id="joinView">
+      <h2>JOIN THE HEIST</h2>
+      <input class="field" id="name" maxlength="24" placeholder="your alias" autocomplete="off" />
+      <div class="row"><button class="btn" id="joinBtn">JOIN</button></div>
+    </section>
+
+    <!-- bet -->
+    <section class="card" id="betView" hidden>
+      <div class="balance">YOUR STACK: <b id="balance">100</b> chips</div>
+      <div class="note" id="phaseNote"></div>
+      <div class="picks" id="picks"></div>
+      <div class="row">
+        <label for="amount">CHIPS</label>
+        <input class="field" type="number" id="amount" value="100" min="1" step="10" style="max-width:120px" />
+        <button class="btn" id="betBtn">PLACE BET</button>
+      </div>
+      <div class="note" id="betStatus"></div>
+    </section>
+
+    <!-- result -->
+    <section class="card" id="resultView" hidden>
+      <div class="result" id="resultText"></div>
+      <div class="balance" style="margin-top:10px">NEW STACK: <b id="balance2">0</b> chips</div>
+    </section>
+  </div>
+
+  <script type="module" src="/play.js"></script>
+</body>
+</html>
