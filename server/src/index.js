@@ -10,6 +10,7 @@
 //   host     -> POST /api/host/open, /api/host/lock (runs the race), /api/host/reset
 // Real agent models arrive in Milestone 3b (keys in .env); today the race runs
 // on mock providers.
+import './env.js'; // load .env (repo root or server/) before anything reads process.env
 import path from 'node:path';
 import { existsSync, readFileSync } from 'node:fs';
 import { EventBus } from './bus.js';
