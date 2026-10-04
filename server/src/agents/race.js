@@ -83,7 +83,7 @@ export class Race {
         onSubmit: this._onSubmit(a.agent),
         shouldStop,
         system: systemPrompt(),
-        task: taskPrompt({ strategy: a.strategy }),
+        task: taskPrompt({ strategy: a.strategy, objective: this.round.challenge }),
         maxSteps: this.maxSteps,
         costTracker: this.cost,
         model: a.model ?? a.provider?.model ?? null,

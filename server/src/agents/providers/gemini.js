@@ -25,7 +25,13 @@ export function toGeminiRequest(messages) {
     // assistant
     const parts = [];
     if (m.text) parts.push({ text: m.text });
-    for (const tc of m.toolCalls ?? []) parts.push({ functionCall: { name: tc.name, args: tc.args ?? {} } });
+    for (const tc of m.toolCalls ?? []) {
+      // Gemini 3.x requires the thoughtSignature from the original response to be
+      // echoed back on the functionCall part, or the next turn 400s.
+      const part = { functionCall: { name: tc.name, args: tc.args ?? {} } };
+      if (tc.thoughtSignature) part.thoughtSignature = tc.thoughtSignature;
+      parts.push(part);
+    }
     contents.push({ role: 'model', parts });
   }
   return { systemInstruction, contents };
@@ -48,7 +54,12 @@ export function fromGeminiResponse(resp) {
   for (const p of parts) {
     if (p.text) thought += p.text;
     if (p.functionCall) {
-      toolCalls.push({ id: `${p.functionCall.name}-${toolCalls.length}`, name: p.functionCall.name, args: p.functionCall.args ?? {} });
+      toolCalls.push({
+        id: `${p.functionCall.name}-${toolCalls.length}`,
+        name: p.functionCall.name,
+        args: p.functionCall.args ?? {},
+        thoughtSignature: p.thoughtSignature, // round-trip on the next turn (Gemini 3.x requirement)
+      });
     }
   }
   return { thought, toolCalls, usage };
