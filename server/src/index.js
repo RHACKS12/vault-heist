@@ -11,6 +11,7 @@
 // Real agent models arrive in Milestone 3b (keys in .env); today the race runs
 // on mock providers.
 import path from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
 import { EventBus } from './bus.js';
 import { Game } from './game.js';
 import { Sandbox } from './sandbox.js';
@@ -18,8 +19,6 @@ import { Betting } from './betting.js';
 import { Recorder } from './recorder.js';
 import { Replayer, listRecordings } from './replayer.js';
 import { Announcer } from './announcer/announcer.js';
-import { createMockTTS } from './announcer/providers/mock-tts.js';
-import { createElevenLabsTTS } from './announcer/providers/elevenlabs.js';
 import { createServer } from './server.js';
 import { DEFAULT_ROOTFS, WEB_ROOT, RECORDINGS_DIR, PORT } from './config.js';
 import { loadAnswerKey, getRound } from './agents/answer.js';
@@ -34,10 +33,24 @@ const sandbox = new Sandbox(DEFAULT_ROOTFS);
 const betting = new Betting({ bus, agents: AGENTS });
 const recorder = new Recorder({ bus });
 const replayer = new Replayer({ bus });
-// Announcer narrates milestones (live and replayed). Uses ElevenLabs when a key
-// is present (stub until wired); otherwise mock TTS -> browser speech fallback.
-const tts = process.env.ELEVENLABS_API_KEY ? createElevenLabsTTS() : createMockTTS();
-const announcer = new Announcer({ bus, tts }).start();
+// Announcer narrates milestones (live and replayed). It plays PRE-GENERATED clips
+// from web/announcer/manifest.json (built offline by `npm run generate:announcer`),
+// so there's no per-event TTS cost. With no manifest, clips are null and the
+// dashboard falls back to the browser's speech.
+const announcer = new Announcer({ bus, clips: loadAnnouncerClips() }).start();
+
+function loadAnnouncerClips() {
+  const file = path.join(WEB_ROOT, 'announcer', 'manifest.json');
+  try {
+    if (existsSync(file)) {
+      const clips = new Map(Object.entries(JSON.parse(readFileSync(file, 'utf8'))));
+      console.log(`[vault-heist] announcer: ${clips.size} pre-generated clips loaded`);
+      return clips;
+    }
+  } catch (e) { console.warn(`[vault-heist] announcer manifest unreadable: ${e.message}`); }
+  console.log('[vault-heist] announcer: no clips — using browser speech fallback');
+  return new Map();
+}
 
 const answerKey = await loadAnswerKey('iotgoat');
 const round = getRound(answerKey); // default round: hardcoded-credentials

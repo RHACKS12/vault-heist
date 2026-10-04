@@ -22,7 +22,7 @@ PORT=4000 npm start
 | `betting.js` | `Betting` — the pari-mutuel pool (join, bet, odds, lock, settle). |
 | `recorder.js` | `Recorder` — capture the event stream to a `.jsonl` (excludes derived `announce` events). |
 | `replayer.js` | `Replayer` — re-emit a recording onto the bus at a watchable cadence. |
-| `announcer/` | The announcer — event→line, TTS, `announce` events. |
+| `announcer/` | The announcer — predefined catalog, event→key, `announce` events. |
 | `index.js` | Wires it together, exposes the command API, and starts listening. |
 | `config.js` | Paths (`DEFAULT_ROOTFS`, `WEB_ROOT`) and `PORT`. |
 | `agents/` | The crew — see below. |
@@ -135,17 +135,30 @@ These are the exact tools the agents (Milestone 3) will be given — not a shell
 
 ## Announcer (Milestone 6)
 
-The announcer is a **derived presentation layer**. `announcer/lines.js` maps a
-milestone/phase event to a heist-crew line (only `found_dir`, `opened_file`,
-`submitted`, `won`, and the fixed "place your bets / and they're off" calls —
-tool noise is silent). `announcer/announcer.js` subscribes to the bus,
-synthesizes audio via a TTS provider (caching fixed lines), and emits `announce`
-events; the dashboard plays them with a **priority queue** (wins/submissions jump
-ahead) and a live caption. Because it regenerates from the stream, it narrates
-**replays** too — which is why recordings exclude `announce` events.
+The announcer is a **derived presentation layer**. `announcer/catalog.js` is the
+predefined set of every line — 3 phase calls + 4 milestones × 3 agents = 15,
+each with a stable `key`. `announcer/lines.js` maps a milestone/phase event to a
+catalog key (only `found_dir`, `opened_file`, `submitted`, `won`, and the fixed
+"place your bets / and they're off / nobody cracked it" calls — tool noise is
+silent). `announcer/announcer.js` subscribes to the bus and emits `announce`
+events, attaching a **pre-generated clip** for the key when one exists; the
+dashboard plays them with a **priority queue** (wins/submissions jump ahead) and
+a live caption. Because it regenerates from the stream, it narrates **replays**
+too — which is why recordings exclude `announce` events.
 
-TTS providers: `providers/mock-tts.js` returns no clip, so the dashboard falls
-back to the browser's speech synthesis (audible with no key).
-`providers/elevenlabs.js` is a stub until `ELEVENLABS_API_KEY` is wired
-(Milestone 6b): synthesize audio, cache fixed lines to a served dir, return the
-clip URL.
+### Pre-generate the audio (keeps cost down)
+
+The line set is finite, so every clip is generated **once** and served as a
+static file — **zero per-event TTS cost** on stage:
+
+```bash
+ELEVENLABS_API_KEY=... [ELEVENLABS_VOICE_ID=...] npm run generate:announcer
+```
+
+This writes one MP3 per catalog entry to `web/announcer/` plus `manifest.json`
+(key → url); commit `web/announcer/` so the demo has audio offline. The server
+loads the manifest at startup and plays the clips — it never calls ElevenLabs at
+runtime. With no manifest, clips are null and the dashboard falls back to the
+browser's built-in speech (audible with no key). Run the generator on a machine
+with network access — the cloud sandbox blocks general egress.
+`providers/elevenlabs.js` is the REST client the generator uses.

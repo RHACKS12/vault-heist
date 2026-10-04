@@ -20,9 +20,14 @@ See `DESIGN.md` for the overall plan and `CONTRIBUTING.md` for the workflow.
 - **`announcer/announcer.js`** — subscribes to the bus, synthesizes audio via a
   TTS provider (caches fixed lines), and emits `announce` events. Never announces
   its own events (no loop).
-- **TTS providers** — `mock-tts.js` (returns no clip → browser speech fallback,
-  audible today) and `elevenlabs.js` (stub, throws `NotWiredError` until 6b, with
-  the intended synth + cache + served-clip mapping documented).
+- **Predefined catalog + pre-generation (cost control).** `announcer/catalog.js`
+  is the finite set of all 15 lines, each with a stable key; `lines.js` maps an
+  event to a key. `npm run generate:announcer` synthesizes every line **once** via
+  ElevenLabs into `web/announcer/` + a `manifest.json` (key → url). The server
+  loads the manifest and plays the clips — **zero per-event TTS cost** at show
+  time. With no manifest, clips are null and the dashboard falls back to the
+  browser's speech (audible with no key). `providers/elevenlabs.js` is the REST
+  client the generator uses; there is no runtime TTS call.
 - **Dashboard** — a **🔊 ANNOUNCER** on/off toggle (audio needs a user gesture),
   a priority playback queue (wins jump ahead, stale low-priority dropped), and a
   live `📣` caption under the verdict.

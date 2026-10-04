@@ -11,6 +11,7 @@
     "demo": "node src/index.js --demo",
     "race": "node src/index.js --race",
     "record:demo": "node scripts/record-demo.mjs",
+    "generate:announcer": "node scripts/generate-announcer.mjs",
     "test": "node --test"
   },
   "dependencies": {

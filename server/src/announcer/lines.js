@@ -1,51 +1,37 @@
-// What the announcer says — pure event → line mapping.
+// Event → announcer line: map a milestone/phase event to a catalog KEY, then
+// return that catalog entry (key, text, priority, agent). Everything voiced is a
+// predefined catalog entry, so it can be pre-generated and cached (catalog.js).
 //
-// Event-driven, NOT a running narrator: only milestone/phase events get a line
-// (found a directory, opened the file, submitted, won, and the fixed "and
-// they're off / place your bets" calls). Tool calls and reasoning are silent.
-// Returns null for anything not worth voicing. Heist-crew persona.
+// Event-driven, NOT a running narrator: tool calls and reasoning are silent.
 import { EVENT_TYPES, PHASES } from '../events.js';
+import { entryFor, PRIORITY } from './catalog.js';
 
-const NAMES = { gemini: 'Gemini', deepseek: 'DeepSeek', haiku: 'Haiku' };
+export { PRIORITY };
 
-/** Priority: higher jumps ahead in the playback queue. */
-export const PRIORITY = { WIN: 3, SUBMIT: 2, PHASE: 2, PROGRESS: 1 };
-
-function line(key, text, priority, { fixed = false, agent = null } = {}) {
-  return { key, text, priority, fixed, agent };
-}
-
-function shortDir(dir) {
-  if (!dir || dir === '/') return 'the vault';
-  const base = dir.split('/').filter(Boolean).pop();
-  return `the ${base} vault`;
+/** The catalog key for an event, or null if it isn't voiced. */
+export function keyFor(event) {
+  if (!event) return null;
+  switch (event.type) {
+    case EVENT_TYPES.PHASE_CHANGE: {
+      const to = event.payload?.to;
+      if (to === PHASES.BETTING_OPEN) return 'lobby';
+      if (to === PHASES.RACING) return 'race_start';
+      if (to === PHASES.SETTLED && !event.payload?.winner) return 'no_crack';
+      return null;
+    }
+    case EVENT_TYPES.FOUND_DIR: return event.agent ? `found:${event.agent}` : null;
+    case EVENT_TYPES.OPENED_FILE: return event.agent ? `opened:${event.agent}` : null;
+    case EVENT_TYPES.SUBMITTED: return event.agent ? `submitted:${event.agent}` : null;
+    case EVENT_TYPES.WON: return event.agent ? `won:${event.agent}` : null;
+    default: return null;
+  }
 }
 
 /**
  * @param {object} event a GameEvent
- * @returns {{key:string,text:string,priority:number,fixed:boolean,agent:?string}|null}
+ * @returns {{key:string,text:string,priority:number,agent:?string}|null}
  */
 export function lineFor(event) {
-  if (!event) return null;
-  const name = event.agent ? (NAMES[event.agent] ?? event.agent) : null;
-
-  switch (event.type) {
-    case EVENT_TYPES.PHASE_CHANGE: {
-      const to = event.payload?.to;
-      if (to === PHASES.BETTING_OPEN) return line('lobby', 'Place your bets, folks — the crew is casing the joint!', PRIORITY.PHASE, { fixed: true });
-      if (to === PHASES.RACING) return line('race_start', "And they're off!", PRIORITY.PHASE, { fixed: true });
-      if (to === PHASES.SETTLED && !event.payload?.winner) return line('no_crack', 'Time! Nobody cracked it — the mark holds.', PRIORITY.PHASE, { fixed: true });
-      return null;
-    }
-    case EVENT_TYPES.FOUND_DIR:
-      return line(`found_dir:${event.agent}`, `${name} just broke into ${shortDir(event.payload?.dir)}!`, PRIORITY.PROGRESS, { agent: event.agent });
-    case EVENT_TYPES.OPENED_FILE:
-      return line(`opened_file:${event.agent}`, `${name} is prying open the vulnerable file!`, PRIORITY.PROGRESS, { agent: event.agent });
-    case EVENT_TYPES.SUBMITTED:
-      return line(`submitted:${event.agent}`, `${name} is calling it — making a submission!`, PRIORITY.SUBMIT, { agent: event.agent });
-    case EVENT_TYPES.WON:
-      return line('winner', `We have a winner! ${name} cracked the vault!`, PRIORITY.WIN, { agent: event.agent });
-    default:
-      return null;
-  }
+  const key = keyFor(event);
+  return key ? entryFor(key) : null;
 }
