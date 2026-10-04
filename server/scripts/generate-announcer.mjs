@@ -11,6 +11,7 @@
 //
 // Credit guard: checks your ElevenLabs balance first (a free call) and refuses to
 // run if there isn't enough headroom for the whole catalog.
+import '../src/env.js'; // load .env (repo root or server/) before reading keys
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { CATALOG } from '../src/announcer/catalog.js';

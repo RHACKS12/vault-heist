@@ -155,6 +155,11 @@ static file — **zero per-event TTS cost** on stage:
 ELEVENLABS_API_KEY=... [ELEVENLABS_VOICE_ID=...] npm run generate:announcer
 ```
 
+Keys can also go in a `.env` file at the repo root (or `server/`) — it's loaded
+automatically (Node ≥ 20.12). Add `--dry-run` to preview the plan + credit
+balance without synthesizing. The generator refuses to run if the balance is too
+low, so it can't overrun your credits.
+
 This writes one MP3 per catalog entry to `web/announcer/` plus `manifest.json`
 (key → url); commit `web/announcer/` so the demo has audio offline. The server
 loads the manifest at startup and plays the clips — it never calls ElevenLabs at
