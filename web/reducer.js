@@ -16,7 +16,7 @@ export const STAGES = ['exploring', 'found the directory', 'opened the file', 's
 function freshAgent(def) {
   // `notes` counts every reasoning line ever received; `reasoning` keeps only the
   // newest 60, so its length stops changing once full and can't signal new lines.
-  return { id: def.id, name: def.name, strategy: def.strategy, stage: 0, reasoning: [], notes: 0, finding: null, rejected: false, attemptsLeft: null, won: false, refused: false };
+  return { id: def.id, name: def.name, strategy: def.strategy, stage: 0, dir: null, file: null, reasoning: [], notes: 0, finding: null, rejected: false, attemptsLeft: null, won: false, refused: false };
 }
 
 export function initialState() {
@@ -68,8 +68,8 @@ export function reduce(state, event) {
       break;
     }
     case 'exploring': if (a) a.stage = Math.max(a.stage, 1); break;
-    case 'found_dir': if (a) a.stage = Math.max(a.stage, 2); break;
-    case 'opened_file': if (a) a.stage = Math.max(a.stage, 3); break;
+    case 'found_dir': if (a) { a.stage = Math.max(a.stage, 2); a.dir = event.payload?.dir ?? a.dir; } break;
+    case 'opened_file': if (a) { a.stage = Math.max(a.stage, 3); a.file = event.payload?.file ?? a.file; } break;
     case 'submitted':
       if (a) { a.stage = Math.max(a.stage, 4); a.finding = event.payload?.finding ?? a.finding; a.rejected = false; }
       break;

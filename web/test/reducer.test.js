@@ -21,6 +21,16 @@ test('milestones advance a crew member monotonically', () => {
   assert.equal(s.agents.gemini.stage, 3);
 });
 
+test('milestones remember the directory and file the agent reached', () => {
+  const s = initialState();
+  reduce(s, ev('found_dir', 'openai', { dir: '/etc' }));
+  reduce(s, ev('opened_file', 'openai', { file: '/etc/shadow' }));
+  reduce(s, ev('found_dir', 'openai')); // a payload-less repeat keeps what we know
+  assert.equal(s.agents.openai.dir, '/etc');
+  assert.equal(s.agents.openai.file, '/etc/shadow');
+  assert.equal(s.agents.gemini.file, null);
+});
+
 test('reasoning tokens accumulate on the right agent', () => {
   const s = initialState();
   reduce(s, ev('reasoning_token', 'openai', { text: 'first' }));

@@ -40,12 +40,14 @@ export function shake(el, strength = 5) {
     keyframes: { x: [strength, -strength * 0.8, strength * 0.5, -strength * 0.3, 0] } });
 }
 
-/** Swap text in with a short decode effect. */
+/** Swap text in with a short decode effect. The scramble holds the final length
+ *  and mixes in spaces, so it wraps like the finished line instead of running
+ *  one long unbreakable word across two lines. */
 export function scramble(el, text) {
   if (el.textContent === text) return;
   if (!animated || !window.ScrambleTextPlugin) { el.textContent = text; return; }
   gsap.to(el, { duration: 0.8, ease: 'none', overwrite: true,
-    scrambleText: { text, chars: 'ABCDEFGHJKLMNPRSTUVWXYZ0123456789', speed: 0.7, revealDelay: 0.15 } });
+    scrambleText: { text, chars: 'ABCDEFGHJKLMNPRSTUVWXYZ0123456789    ', speed: 0.7, revealDelay: 0.15, tweenLength: false } });
 }
 
 /** Swap text in with a quick fade and rise. */

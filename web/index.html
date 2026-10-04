@@ -35,12 +35,11 @@
 
     <header class="case-header" data-reveal>
       <div class="case-no">CASE FILE <span>No. XII</span> <span class="case-slash">/</span> ROWDYHACKS XII <span class="case-slash">/</span> SAN ANTONIO, TX</div>
-      <h1 class="case-title">THE VAULT HEIST<span class="title-period">.</span></h1>
-      <div class="case-sub">
-        <p class="intro-copy">Three AI safecrackers. One hidden vulnerability. Who gets there first?</p>
+      <div class="case-line">
+        <h1 class="case-title">THE VAULT HEIST<span class="title-period">.</span></h1>
         <div class="case-meta">
-          <span>ROUND <b id="round">1</b></span>
-          <span class="clock" id="clockWrap">T+ <b id="clock">00:00</b></span>
+          <span class="meta-tag">ROUND <b id="round">1</b></span>
+          <span class="meta-tag clock" id="clockWrap">T+ <b id="clock">00:00</b></span>
           <span class="visually-hidden" id="phase" role="status">LOBBY</span>
         </div>
       </div>
@@ -107,9 +106,10 @@
               </ol>
             </aside>
           </div>
-          <div class="dispatch">
-            <span class="dispatch-label"><i class="on-air" aria-hidden="true"></i>CREW RADIO</span>
-            <div class="announcer" id="announcerVis" aria-hidden="true"></div>
+          <div class="dispatch" id="dispatch">
+            <span class="dispatch-label"><svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#volume" /></svg>ANNOUNCER</span>
+            <span class="meter" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+            <p class="announcer" id="announcerVis" aria-hidden="true"></p>
             <div class="visually-hidden" id="announcer" aria-live="polite"></div>
           </div>
         </section>
@@ -137,7 +137,7 @@
         <div class="crew" id="crew"><!-- agent dossiers injected here --></div>
       </section>
     </main>
-    <footer class="page-footer"><span>THE HEIST IS ON.</span><span>A ROWDYHACKS XII PROJECT / OCT. 3–4</span><a href="/play.html">Join the crew <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#arrow-right" /></svg></a></footer>
+    <footer class="page-footer"><span>THE HEIST IS ON.</span><a href="/play.html">Join the crew <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#arrow-right" /></svg></a></footer>
   </div>
 
   <!-- Host controls live off the projected page: a corner tab opens the desk (or press H). -->

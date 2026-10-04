@@ -22,6 +22,7 @@
   --terminal-text: #f0ede7;
   --terminal-dim: #bcae98;
   --go: #315d3b;
+  --gold: #f6cf78;
   --display: Bungee, "Arial Black", sans-serif;
   --shadow-sheet: 0 1px 0 #1a141012, 0 3px 6px -2px #1a14101f, 0 22px 34px -22px #1a141066;
   --shadow-lift: 0 2px 0 #1a141012, 0 10px 18px -8px #1a141038, 0 40px 60px -28px #1a141099;
@@ -42,7 +43,7 @@
 }
 * { box-sizing: border-box; }
 body { margin: 0; min-height: 100vh; overflow-x: clip; }
-body::after { content: ""; position: fixed; inset: 0; z-index: 200; pointer-events: none; background: var(--grain); opacity: .55; mix-blend-mode: multiply; }
+body::after { content: ""; position: fixed; inset: 0; z-index: 200; pointer-events: none; background: var(--grain); opacity: .3; mix-blend-mode: multiply; }
 ::selection { background: var(--red); color: var(--card); }
 button, input { font: inherit; }
 button, a, input { -webkit-tap-highlight-color: transparent; }
@@ -81,7 +82,8 @@ kbd { font: inherit; font-size: .85em; padding: .05em .4em; border: 1px solid cu
 .phase-wrap { position: relative; }
 .phase-track { position: relative; display: flex; gap: .3rem; margin: 0; padding: 0; list-style: none; }
 .phase-track li { position: relative; padding: .5rem .75rem .4rem; font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint); transition: color .45s var(--ease-out); white-space: nowrap; }
-.phase-track li + li::before { content: ""; position: absolute; left: -.2rem; top: 50%; width: .2rem; height: .2rem; margin-top: -.1rem; background: var(--ink-faint); border-radius: 50%; }
+.phase-track li + li::before { content: ""; position: absolute; left: -.2rem; top: 50%; width: .2rem; height: .2rem; margin-top: -.1rem; background: var(--ink-faint); border-radius: 50%; transition: opacity .3s; }
+.phase-track li[aria-current]::before, .phase-track li[aria-current] + li::before { opacity: 0; }
 .phase-track li.done { color: var(--ink-soft); }
 .phase-track li[aria-current] { color: var(--card); }
 .phase-marker { position: absolute; top: 0; bottom: 0; left: 0; width: 0; }
@@ -94,12 +96,17 @@ kbd { font: inherit; font-size: .85em; padding: .05em .4em; border: 1px solid cu
 .case-no .case-slash { color: var(--ink); margin: 0 .55rem; }
 .case-title { font-family: var(--display); font-size: clamp(2.4rem, 4.1vw, 4.4rem); font-weight: 400; letter-spacing: -.02em; line-height: 1.02; margin: 0 16rem .55rem 0; }
 .title-period { color: var(--red); }
-.case-sub { display: flex; align-items: baseline; flex-wrap: wrap; gap: .5rem 2.25rem; margin-right: 16rem; }
 .intro-copy { font-size: .95rem; margin: 0; color: var(--ink-soft); }
 .case-meta { display: flex; align-items: center; gap: 1.5rem; font-size: .75rem; font-weight: 700; letter-spacing: .1em; }
 .case-meta b { font-size: .95rem; }
-.clock { color: var(--ink-faint); font-variant-numeric: tabular-nums; transition: color .3s; }
-.clock.running { color: var(--red); }
+/* the title shares its line with the round and race clock */
+.case-line { display: flex; align-items: center; flex-wrap: wrap; gap: .7rem 1.8rem; margin-right: 16rem; }
+.case-line .case-title { margin: 0; }
+.dash .case-meta { flex-wrap: wrap; gap: .6rem; }
+.meta-tag { display: inline-flex; align-items: baseline; gap: .45rem; padding: .32rem .6rem .26rem; border: 1px solid var(--ink); }
+.meta-tag b { font-size: .9rem; letter-spacing: .06em; }
+.clock { color: var(--ink-faint); border-color: var(--ink-faint); font-variant-numeric: tabular-nums; transition: color .3s, background .3s, border-color .3s; }
+.clock.running { color: var(--card); background: var(--red); border-color: var(--red); }
 .stamp { position: absolute; right: .4rem; top: 50%; translate: 0 -46%; rotate: -8deg; border: 3px solid var(--red); padding: .55rem .9rem .45rem; color: var(--red); text-align: center; -webkit-mask: var(--distress); mask: var(--distress); }
 .stamp b { display: block; font-size: 1.5rem; letter-spacing: .06em; line-height: 1.1; white-space: nowrap; }
 .stamp span { display: block; border-top: 1px solid currentColor; padding-top: .3rem; margin-top: .3rem; font-size: .6rem; font-weight: 700; letter-spacing: .2em; white-space: nowrap; }
@@ -125,13 +132,29 @@ main { display: block; }
 .rules ol { margin: 0; padding-left: 1rem; font-size: .7rem; line-height: 1.3rem; color: var(--ink-soft); }
 .rules li::marker { color: var(--red); font-weight: 700; }
 .verdict b { color: var(--red); }
-.dispatch { display: flex; align-items: baseline; gap: 1rem; border-top: 1px dashed var(--paper-line); min-height: 3rem; padding: .8rem 1.3rem; }
-.dispatch-label { flex-shrink: 0; display: inline-flex; align-items: center; gap: .5rem; font-size: .65rem; font-weight: 700; letter-spacing: .12em; color: var(--red); }
-.on-air { width: .45rem; height: .45rem; border-radius: 50%; background: currentColor; opacity: .35; }
-.dash:has(.vault[data-state="racing"]) .on-air { opacity: 1; animation: pulse 1.6s ease-out infinite; }
-.announcer { font-size: .82rem; line-height: 1.45; color: var(--ink-soft); min-width: 0; overflow-wrap: anywhere; }
-.announcer:empty::after { content: "Standing by for the first move."; }
+/* the announcer: a dark broadcast strip under the job, swept red on every new call */
+.dispatch { position: relative; display: flex; align-items: center; gap: .9rem; min-height: 3.5rem; padding: .7rem 1.3rem .7rem .9rem; background: var(--ink); color: var(--card); overflow: hidden; }
+.dispatch > * { position: relative; z-index: 1; }
+.dispatch::before { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 15%, #ac1903aa 50%, transparent 85%); translate: -100% 0; pointer-events: none; }
+.dispatch.flash::before { animation: sweep 1.3s var(--ease-out); }
+@keyframes sweep { to { translate: 100% 0; } }
+.dispatch-label { flex-shrink: 0; display: inline-flex; align-items: center; gap: .45rem; padding: .42rem .7rem .36rem; background: var(--red); color: var(--card); font-size: .68rem; font-weight: 700; letter-spacing: .16em; }
+.dispatch-label .icon { width: 1rem; height: 1rem; }
+.meter { flex-shrink: 0; display: flex; align-items: flex-end; gap: 3px; height: 1.2rem; }
+.meter i { width: 3px; height: 100%; background: var(--terminal-dim); opacity: .45; transform: scaleY(.25); transform-origin: bottom; transition: transform .4s, opacity .4s; }
+.dispatch.on-air .meter i { opacity: 1; background: var(--gold); animation: meter .5s ease-in-out infinite alternate; }
+.meter i:nth-child(2) { animation-duration: .38s; animation-delay: -.2s; }
+.meter i:nth-child(3) { animation-duration: .62s; animation-delay: -.1s; }
+.meter i:nth-child(4) { animation-duration: .44s; animation-delay: -.3s; }
+.meter i:nth-child(5) { animation-duration: .56s; }
+@keyframes meter { from { transform: scaleY(.2); } to { transform: scaleY(1); } }
+.announcer { margin: 0; min-width: 0; font-size: 1.25rem; font-weight: 700; line-height: 1.3; color: var(--card); overflow-wrap: anywhere; }
+.announcer:not(:empty)::before { content: "\201C"; color: var(--gold); margin-right: .1em; }
+.announcer:not(.typing):not(:empty)::after { content: "\201D"; color: var(--gold); margin-left: .1em; }
+.announcer:empty::after { content: "Standing by for the first call."; font-weight: 400; color: var(--terminal-dim); }
+.announcer .who { font-family: var(--display); font-weight: 400; color: var(--gold); }
 .typing::after { content: "▌"; margin-left: .1em; color: var(--red); animation: blink .8s steps(1) infinite; }
+.announcer.typing::after { color: var(--gold); }
 @keyframes blink { 50% { opacity: 0; } }
 
 /* the vault: a fixed frame with loot inside, and a door that swings on its left hinges */
@@ -220,20 +243,38 @@ html:not(.has-gsap) .vault[data-state="racing"] .vault-dial { transform-origin: 
 .agent-strategy { font-size: .75rem; color: var(--ink-soft); }
 .agent-odds { margin-left: auto; line-height: 1.1; text-align: right; }
 .agent-odds b { display: block; color: var(--red); font-size: 1.35rem; }
+.agent-odds b.none { color: var(--ink-faint); }
 .agent-odds span { font-size: .6rem; letter-spacing: .14em; color: var(--ink-soft); }
 .agent-bets { margin-top: .15rem; color: var(--ink-faint); font-size: .7rem; }
-.bar { display: flex; gap: .3rem; padding: .35rem .95rem .4rem; }
-.seg { height: .45rem; flex: 1; background: #d6cbbd; border: 1px solid #8c7b66; overflow: hidden; }
-.seg i { display: block; height: 100%; background: var(--go); transform: scaleX(0); transform-origin: left; transition: transform .7s var(--ease-out); }
-.seg.on i { transform: scaleX(1); }
-.seg:nth-child(2) i { transition-delay: .05s; } .seg:nth-child(3) i { transition-delay: .1s; } .seg:nth-child(4) i { transition-delay: .15s; }
-.bar-caption { display: flex; justify-content: space-between; gap: .5rem; padding: 0 .95rem .85rem; font-size: .68rem; line-height: 1.2; letter-spacing: .04em; }
-.stage-name { font-weight: 700; }
-.stage-count { color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+/* progress: one chevron chip per milestone; the next one runs a striped "working" fill */
+.track { display: flex; gap: .2rem; padding: .3rem .95rem .5rem; container-type: inline-size; }
+.step { --notch: .55rem; position: relative; flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; gap: .35rem; height: 1.9rem; padding: 0 .35rem 0 calc(var(--notch) + .15rem); background: #dcd1c1; color: var(--ink-soft); font-size: .58rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; overflow: hidden; transition: color .4s .25s;
+  clip-path: polygon(0 0, calc(100% - var(--notch)) 0, 100% 50%, calc(100% - var(--notch)) 100%, 0 100%, var(--notch) 50%); }
+.step:first-child { padding-left: .45rem; clip-path: polygon(0 0, calc(100% - var(--notch)) 0, 100% 50%, calc(100% - var(--notch)) 100%, 0 100%); }
+.step > :not(.fill) { position: relative; z-index: 1; }
+.step .icon { width: .95rem; height: .95rem; }
+.step span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.step .fill { position: absolute; inset: 0; background: var(--go); transform: scaleX(0); transform-origin: left; transition: transform .7s var(--ease-out); }
+.step:nth-child(2) .fill { transition-delay: .08s; } .step:nth-child(3) .fill { transition-delay: .16s; } .step:nth-child(4) .fill { transition-delay: .24s; }
+.step.on { color: var(--card); }
+.step.on .fill { transform: scaleX(1); }
+.step.next { --stripe: #315d3b; color: var(--go); background-image: repeating-linear-gradient(-45deg, color-mix(in srgb, var(--stripe) 26%, transparent) 0 .35rem, color-mix(in srgb, var(--stripe) 8%, transparent) .35rem .7rem); animation: stripes .9s linear infinite; }
+@keyframes stripes { to { background-position: calc(.7rem * 1.4142) 0; } }
+/* narrow dossiers drop the icons before they clip a label */
+@container (max-width: 24rem) { .step .icon { display: none; } }
+@container (max-width: 19rem) { .step { letter-spacing: .02em; } }
+.bar-caption { display: flex; align-items: baseline; gap: .55rem; padding: 0 .95rem .85rem; font-size: .68rem; line-height: 1.3; letter-spacing: .04em; }
+.stage-name { flex-shrink: 0; font-weight: 700; }
+.stage-clue { min-width: 0; padding: 0 .4rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: inherit; color: var(--red-deep); border: 1px dashed #8c7b66; background: #1a14100a; }
+.stage-clue:empty { display: none; }
+.stage-count { margin-left: auto; color: var(--ink-faint); font-variant-numeric: tabular-nums; }
 .stage-name::first-letter { text-transform: uppercase; }
 .notes { display: flex; flex-direction: column; margin: auto .75rem .75rem; overflow: hidden; background: var(--terminal); }
 .log-label { display: flex; justify-content: space-between; gap: .5rem; padding: .6rem .85rem .5rem; background: var(--terminal); color: var(--terminal-text); border-bottom: 1px solid #575047; font-size: .62rem; letter-spacing: .06em; }
-.log-label span { color: var(--terminal-dim); font-size: .58rem; }
+.log-label span { display: inline-flex; align-items: center; gap: .45rem; color: var(--terminal-dim); font-size: .58rem; }
+.tx { width: .4rem; height: .4rem; border-radius: 50%; background: #6e6457; }
+.tx.blip { animation: blip .7s ease-out; }
+@keyframes blip { 0%, 35% { background: var(--gold); box-shadow: 0 0 .5rem var(--gold); } }
 .reasoning { min-height: 7.5rem; max-height: 11rem; padding: .75rem .85rem; background: var(--terminal); color: var(--terminal-text); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #6e6457 var(--terminal); font-size: .78rem; line-height: 1.5;
   background-image: linear-gradient(#ffffff05 50%, transparent 50%); background-size: 100% 4px;
   -webkit-mask-image: linear-gradient(transparent, #000 .75rem); mask-image: linear-gradient(transparent, #000 .75rem); }
@@ -251,8 +292,8 @@ html:not(.has-gsap) .vault[data-state="racing"] .vault-dial { transform-origin: 
 .agent.won .agent-sheet { box-shadow: var(--shadow-lift); }
 .agent.won .agent-file { background: var(--red); color: var(--card); }
 .agent.won .agent-file > span:first-child { color: var(--card); }
-.agent.won .seg { border-color: var(--red); }
-.agent.won .seg i { background: var(--red); }
+.agent.won .step .fill { background: var(--red); }
+.agent.rejected .step.next { --stripe: #ac1903; color: var(--red); }
 .agent.refused .agent-status, .agent.rejected .agent-status { color: var(--red); }
 .agent.rejected .finding { border-left-style: dashed; }
 .agent.refused .agent-sheet { filter: grayscale(.6); }
@@ -318,7 +359,7 @@ html:not(.has-gsap) .vault[data-state="racing"] .vault-dial { transform-origin: 
   .dash .operation { padding-top: 2.3rem; }
   .dash .target-layout { padding-block: 1.1rem .9rem; grid-template-columns: minmax(8rem, 10.5rem) minmax(0, 1fr); }
   .dash .vault { max-width: 10.5rem; }
-  .dash .dispatch { min-height: 2.6rem; padding-block: .6rem; }
+  .dash .dispatch { min-height: 3.1rem; padding-block: .55rem; }
   .dash main { flex: 1; min-height: 0; display: flex; flex-direction: column; padding-bottom: 1.4rem; }
   .dash .crew-section { flex: 1; min-height: 0; display: flex; flex-direction: column; margin-top: 1.3rem; }
   .dash .section-heading { margin-bottom: .75rem; }
@@ -425,7 +466,7 @@ html:not(.has-gsap) .vault[data-state="racing"] .vault-dial { transform-origin: 
   .site-bar { grid-template-columns: auto 1fr; }
   .site-bar .phase-wrap { justify-self: end; }
   .bar-right { display: none; }
-  .case-title, .case-sub { margin-right: 12rem; }
+  .case-title, .case-line { margin-right: 12rem; }
   .stamp b { font-size: 1.2rem; }
   .operation { grid-template-columns: minmax(0, 1fr) 17.5rem; gap: 1.1rem; }
   .target-layout { gap: 1.25rem; padding-inline: 1.25rem; grid-template-columns: 8.5rem minmax(0, 1fr); }
@@ -442,7 +483,7 @@ html:not(.has-gsap) .vault[data-state="racing"] .vault-dial { transform-origin: 
   .site-bar .phase-wrap { display: none; }
   .site-bar { grid-template-columns: 1fr auto; }
   .bar-right { display: flex; }
-  .case-title, .case-sub { margin-right: 10rem; }
+  .case-title, .case-line { margin-right: 10rem; }
   .stamp { padding-inline: .6rem; }
   .stamp b { font-size: 1rem; }
   .stamp span { font-size: .5rem; letter-spacing: .1em; }
@@ -453,7 +494,8 @@ html:not(.has-gsap) .vault[data-state="racing"] .vault-dial { transform-origin: 
   .ticket { grid-column: 2; grid-row: 2; margin-top: 0; grid-template-columns: 6.6rem minmax(0, 1fr); }
   .ticket-qr { width: auto; }
   .ticket-copy { padding: 0 0 0 .9rem; border-top: 0; border-left: 1px dashed #9c8b73; text-align: left; }
-  .dispatch { flex-direction: column; gap: .3rem; }
+  .dispatch { flex-wrap: wrap; gap: .55rem .8rem; }
+  .announcer { flex-basis: 100%; }
   .crew { grid-template-columns: 1fr; }
   .agent-head { padding: 1.1rem 1.2rem .7rem; }
   .agent-name { font-size: 1.6rem; }
@@ -470,7 +512,7 @@ html:not(.has-gsap) .vault[data-state="racing"] .vault-dial { transform-origin: 
   .case-header { padding: 1.5rem 0 1.3rem; }
   .case-no { font-size: .58rem; letter-spacing: .08em; }
   .case-no .case-slash { margin: 0 .3rem; }
-  .case-title, .case-sub { margin-right: 0; }
+  .case-title, .case-line { margin-right: 0; }
   .case-title { font-size: clamp(2.1rem, 9.5vw, 3rem); letter-spacing: -.01em; }
   .intro-copy { font-size: .85rem; }
   .stamp { position: static; display: inline-block; translate: none; rotate: -4deg; margin-top: 1.2rem; padding: .35rem .55rem; border-width: 2px; }
@@ -482,6 +524,7 @@ html:not(.has-gsap) .vault[data-state="racing"] .vault-dial { transform-origin: 
   .vault-label { font-size: .5rem; letter-spacing: .1em; }
   .vault-stamp { font-size: 1rem; border-width: 2px; }
   .dispatch { padding: .75rem 1rem; }
+  .announcer { font-size: 1.1rem; }
   .bankroll { display: flex; align-items: stretch; padding: 1.35rem; }
   .ticket { grid-template-columns: 6rem minmax(0, 1fr); margin-top: .2rem; }
   .pot b { font-size: 3.2rem; }

@@ -11,6 +11,9 @@ let state = initialState();
 const $ = (id) => document.getElementById(id);
 const nameOf = (id) => CREW.find((d) => d.id === id)?.name ?? id;
 
+// one chip per milestone, in STAGES order: [icon, label]
+const STEPS = [['search', 'Explore'], ['folder', 'Find dir'], ['file', 'Open file'], ['flag', 'Submit']];
+
 // ---- build the crew dossiers once, keep refs for fast updates ----
 const crewEl = $('crew');
 const panels = {};
@@ -31,10 +34,10 @@ CREW.forEach((def, i) => {
         </div>
         <div class="agent-odds"><b>—</b><span>ODDS</span></div>
       </div>
-      <div class="bar" role="img" aria-label="Progress: not started">${STAGES.map(() => '<div class="seg"><i></i></div>').join('')}</div>
-      <div class="bar-caption" aria-hidden="true"><span class="stage-name">not started</span><span class="stage-count">0 / ${STAGES.length}</span></div>
+      <div class="track" role="img" aria-label="Progress: not started">${STEPS.map(([icon, name]) => `<span class="step"><i class="fill"></i><svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#${icon}" /></svg><span>${name}</span></span>`).join('')}</div>
+      <div class="bar-caption" aria-hidden="true"><span class="stage-name">not started</span><code class="stage-clue"></code><span class="stage-count">0 / ${STAGES.length}</span></div>
       <div class="notes">
-        <div class="log-label">FIELD NOTES <span>LIVE TRANSCRIPT</span></div>
+        <div class="log-label">FIELD NOTES <span><i class="tx"></i>LIVE TRANSCRIPT</span></div>
         <div class="reasoning" tabindex="0" role="region" aria-label="${def.name} field notes"></div>
       </div>
       <div class="finding" hidden><span class="finding-label">SUBMITTED FINDING</span><p><span class="finding-text"></span></p></div>
@@ -44,8 +47,8 @@ CREW.forEach((def, i) => {
   const q = (sel) => el.querySelector(sel);
   panels[def.id] = {
     el, sheet: q('.agent-sheet'), status: q('.agent-status'), odds: q('.agent-odds b'), bets: q('.agent-bets'),
-    bar: q('.bar'), segs: [...el.querySelectorAll('.seg')], stageName: q('.stage-name'), stageCount: q('.stage-count'),
-    reasoning: q('.reasoning'), finding: q('.finding'), findingText: q('.finding-text'), stamp: q('.agent-stamp'),
+    track: q('.track'), steps: [...el.querySelectorAll('.step')], stageName: q('.stage-name'), clue: q('.stage-clue'), stageCount: q('.stage-count'),
+    tx: q('.tx'), reasoning: q('.reasoning'), finding: q('.finding'), findingText: q('.finding-text'), stamp: q('.agent-stamp'),
     queue: [], draining: false, prev: null,
   };
 });
@@ -61,7 +64,7 @@ const els = {
   hostToggle: $('hostToggle'), desk: $('hostDesk'), hostClose: $('hostClose'), hostStatus: $('hostStatus'),
   hostOpen: $('hostOpen'), hostLock: $('hostLock'), hostReset: $('hostReset'),
   runRace: $('runRace'), recBtn: $('recBtn'), replayBtn: $('replayBtn'), muteBtn: $('muteBtn'), qrBtn: $('qrBtn'),
-  announcer: $('announcer'), announcerVis: $('announcerVis'),
+  dispatch: $('dispatch'), announcer: $('announcer'), announcerVis: $('announcerVis'),
 };
 const label = (btn) => btn.querySelector('span');
 
@@ -232,15 +235,26 @@ function renderCrew(live) {
     const o = state.odds?.[def.id];
     const odds = o ? `×${o}` : '—';
     if (p.odds.textContent !== odds) live ? swapText(p.odds, odds) : (p.odds.textContent = odds);
+    p.odds.classList.toggle('none', !o);
     const n = state.counts?.[def.id] ?? 0;
     const chips = state.totals?.[def.id] ?? 0;
     p.bets.textContent = n > 0 ? `${n} backer${n > 1 ? 's' : ''} · ${chips} chips` : 'No backers yet';
 
-    p.segs.forEach((seg, i) => seg.classList.toggle('on', i < a.stage));
-    const stageName = a.stage > 0 ? STAGES[a.stage - 1] : 'not started';
+    // the chip the agent is working toward runs a striped "in progress" fill
+    const working = state.phase === 'RACING' && !a.won && !a.refused && !out;
+    p.steps.forEach((step, i) => {
+      step.classList.toggle('on', i < a.stage);
+      step.classList.toggle('next', working && i === a.stage);
+      if (live && animated && i >= prev.stage && i < a.stage) {
+        gsap.fromTo(step, { scale: 1.14 }, { scale: 1, duration: 0.55, delay: 0.3 + (i - prev.stage) * 0.1, ease: 'back.out(3)', clearProps: 'scale' });
+      }
+    });
+    const stageName = a.stage > 0 ? STAGES[a.stage - 1] : working ? 'getting started' : 'not started';
     if (p.stageName.textContent !== stageName) live ? swapText(p.stageName, stageName) : (p.stageName.textContent = stageName);
+    const clue = (a.stage >= 3 ? a.file : a.stage === 2 ? a.dir : null) ?? '';
+    if (p.clue.textContent !== clue) live && clue ? swapText(p.clue, clue) : (p.clue.textContent = clue);
     p.stageCount.textContent = `${a.stage} / ${STAGES.length}`;
-    p.bar.setAttribute('aria-label', `Progress: ${stageName}, ${a.stage} of ${STAGES.length}`);
+    p.track.setAttribute('aria-label', `Progress: ${stageName}${clue ? ` (${clue})` : ''}, ${a.stage} of ${STAGES.length}`);
 
     // field notes: only the lines that arrived since the last frame
     if (a.notes < prev.notes) { p.reasoning.textContent = ''; p.queue.length = 0; }
@@ -292,12 +306,20 @@ function pushNotes(p, lines, instant) {
   else drainNotes(p);
 }
 
+/** Restart a one-shot CSS animation (the transcript light, the announcer sweep). */
+function blip(el, cls = 'blip') {
+  el.classList.remove(cls);
+  void el.offsetWidth;
+  el.classList.add(cls);
+}
+
 async function drainNotes(p) {
   if (p.draining) return;
   p.draining = true;
   const follow = () => { p.reasoning.scrollTop = p.reasoning.scrollHeight; };
   while (p.queue.length) {
     const [node, text] = p.queue.shift();
+    blip(p.tx);
     if (p.queue.length > 3) { node.textContent = text; follow(); continue; } // falling behind: catch up
     await typeOut(node, text, { cps: 110, max: 0.8, onTick: follow });
   }
@@ -465,7 +487,7 @@ function connect() {
         render(false);
         return;
       }
-      if (msg.type === 'announce') announce(msg.payload); // audio cue (handled separately)
+      if (msg.type === 'announce') announce({ ...msg.payload, agent: msg.agent }); // audio cue (handled separately)
       state = reduce(state, msg);
       clockOnEvent(msg);
       render(true);
@@ -493,10 +515,18 @@ els.muteBtn.addEventListener('click', () => {
   else { audioQueue.length = 0; try { window.speechSynthesis?.cancel(); } catch { /* ignore */ } speaking = false; }
 });
 
+let announceSeq = 0;
+let airTimer;
+
 function announce(a) {
   if (!a?.text) return;
+  const seq = ++announceSeq;
   els.announcer.textContent = a.text;                              // caption always shows
-  typeOut(els.announcerVis, a.text, { cps: 70, max: 1.4 });
+  blip(els.dispatch, 'flash');
+  els.dispatch.classList.add('on-air');
+  clearTimeout(airTimer);
+  airTimer = setTimeout(() => els.dispatch.classList.remove('on-air'), 3500);
+  typeOut(els.announcerVis, a.text, { cps: 70, max: 1.4 }).then(() => { if (seq === announceSeq) highlightName(els.announcerVis, a); });
   if (!announcerOn) return;
   if ((a.priority || 0) >= 3) audioQueue.length = 0;                 // a win preempts queued chatter
   if (a.key && audioQueue.some((x) => x.key === a.key)) return;      // don't queue the same line twice
@@ -504,6 +534,17 @@ function announce(a) {
   audioQueue.sort((x, y) => (y.priority || 0) - (x.priority || 0)); // wins/submissions jump ahead
   while (audioQueue.length > 4) audioQueue.pop();                    // drop stale low-priority stragglers
   playNext();
+}
+
+/** Once a line has typed out, pick the safecracker's name out in gold. */
+function highlightName(el, a) {
+  const name = a.agent ? nameOf(a.agent) : '';
+  const at = name ? a.text.indexOf(name) : -1;
+  if (at < 0) return;
+  const who = document.createElement('b');
+  who.className = 'who';
+  who.textContent = name;
+  el.replaceChildren(a.text.slice(0, at), who, a.text.slice(at + name.length));
 }
 
 function playNext() {
