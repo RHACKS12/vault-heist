@@ -32,17 +32,17 @@ test('milestones and phases map to catalog keys', () => {
   assert.equal(keyFor({ type: EVENT_TYPES.PHASE_CHANGE, payload: { to: PHASES.BETS_LOCKED } }), 'bets_closed');
   assert.equal(keyFor({ type: EVENT_TYPES.PHASE_CHANGE, payload: { to: PHASES.LOBBY } }), 'new_round');
   assert.equal(keyFor({ type: EVENT_TYPES.FOUND_DIR, agent: 'gemini', payload: { dir: '/etc' } }), 'found:gemini');
-  assert.equal(keyFor({ type: EVENT_TYPES.WON, agent: 'deepseek' }), 'won:deepseek');
+  assert.equal(keyFor({ type: EVENT_TYPES.WON, agent: 'openai' }), 'won:openai');
   // settled only speaks when nobody won
   assert.equal(keyFor({ type: EVENT_TYPES.PHASE_CHANGE, payload: { to: PHASES.SETTLED, winner: 'gemini' } }), null);
   assert.equal(keyFor({ type: EVENT_TYPES.PHASE_CHANGE, payload: { to: PHASES.SETTLED, winner: null } }), 'no_crack');
 });
 
 test('lineFor returns the catalog entry; win line is high priority', () => {
-  const win = lineFor({ type: EVENT_TYPES.WON, agent: 'deepseek' });
-  assert.equal(win.key, 'won:deepseek');
+  const win = lineFor({ type: EVENT_TYPES.WON, agent: 'openai' });
+  assert.equal(win.key, 'won:openai');
   assert.match(win.text, /cracked/i);
-  assert.match(win.text, /DeepSeek/);
+  assert.match(win.text, /OpenAI/);
   assert.equal(win.priority, PRIORITY.WIN);
   assert.equal(lineFor({ type: EVENT_TYPES.EXPLORING, agent: 'gemini' }), null);
 });
@@ -69,11 +69,11 @@ test('a milestone produces one announce event with catalog text; clip null with 
 });
 
 test('a pre-generated clip is attached from the manifest', async () => {
-  const clips = new Map([['won:deepseek', '/announcer/won_deepseek.mp3']]);
+  const clips = new Map([['won:openai', '/announcer/won_openai.mp3']]);
   const { bus, announces } = harness(clips);
-  bus.publish(createEvent({ source: SOURCES.AGENT, agent: 'deepseek', type: EVENT_TYPES.WON }));
+  bus.publish(createEvent({ source: SOURCES.AGENT, agent: 'openai', type: EVENT_TYPES.WON }));
   await tick();
-  assert.equal(announces[0].payload.clip, '/announcer/won_deepseek.mp3');
+  assert.equal(announces[0].payload.clip, '/announcer/won_openai.mp3');
 });
 
 test('the announcer never announces its own announce events (no loop)', async () => {
@@ -85,7 +85,7 @@ test('the announcer never announces its own announce events (no loop)', async ()
 
 test('narrates replayed milestones too (derived layer)', async () => {
   const { bus, announces } = harness();
-  bus.publish({ ...createEvent({ source: SOURCES.AGENT, agent: 'deepseek', type: EVENT_TYPES.OPENED_FILE }), replay: true });
+  bus.publish({ ...createEvent({ source: SOURCES.AGENT, agent: 'openai', type: EVENT_TYPES.OPENED_FILE }), replay: true });
   await tick();
   assert.equal(announces.length, 1);
 });

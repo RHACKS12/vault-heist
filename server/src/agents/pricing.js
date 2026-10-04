@@ -8,7 +8,10 @@
 export const PRICES = Object.freeze({
   // Google Gemini
   'gemini-2.5-flash': { inputPerM: 0.30, outputPerM: 2.50 },
-  // DeepSeek
+  // OpenAI
+  'gpt-4o-mini': { inputPerM: 0.15, outputPerM: 0.60 },
+  'gpt-4.1-mini': { inputPerM: 0.40, outputPerM: 1.60 },
+  // DeepSeek (still supported via the OpenAI-compatible core)
   'deepseek-chat': { inputPerM: 0.27, outputPerM: 1.10 },
   // Anthropic Claude
   'claude-haiku-4-5': { inputPerM: 1.00, outputPerM: 5.00 },

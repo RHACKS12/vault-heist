@@ -44,7 +44,7 @@ export const EVENT_TYPES = Object.freeze({
 /** The three safecrackers ("the crew"). */
 export const AGENTS = Object.freeze({
   GEMINI: 'gemini',
-  DEEPSEEK: 'deepseek',
+  OPENAI: 'openai',
   HAIKU: 'haiku',
 });
 

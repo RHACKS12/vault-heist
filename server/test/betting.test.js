@@ -4,7 +4,7 @@ import { EventBus } from '../src/bus.js';
 import { Betting, BettingError } from '../src/betting.js';
 import { EVENT_TYPES } from '../src/events.js';
 
-const AGENTS = ['gemini', 'deepseek', 'haiku'];
+const AGENTS = ['gemini', 'openai', 'haiku'];
 
 function setup() {
   const bus = new EventBus();
@@ -26,10 +26,10 @@ test('join issues a player with the starting balance', () => {
 test('placing a bet moves chips, updates the pot, and emits odds', () => {
   const { betting, events } = setup();
   const { playerId } = betting.join('Ava');
-  const r = betting.placeBet(playerId, 'deepseek', 60);
+  const r = betting.placeBet(playerId, 'openai', 60);
   assert.equal(r.balance, 40);
   assert.equal(betting.pot(), 60);
-  assert.equal(betting.totals().deepseek, 60);
+  assert.equal(betting.totals().openai, 60);
   assert.ok(events.some((e) => e.type === EVENT_TYPES.BET_PLACED));
   assert.ok(events.some((e) => e.type === EVENT_TYPES.ODDS_UPDATE));
 });
@@ -37,10 +37,10 @@ test('placing a bet moves chips, updates the pot, and emits odds', () => {
 test('odds are pot/stake, null when nothing is on an agent', () => {
   const { betting } = setup();
   const a = betting.join('A'); const b = betting.join('B');
-  betting.placeBet(a.playerId, 'deepseek', 100);
+  betting.placeBet(a.playerId, 'openai', 100);
   betting.placeBet(b.playerId, 'gemini', 100);
   const odds = betting.odds();
-  assert.equal(odds.deepseek, 2);   // pot 200 / 100
+  assert.equal(odds.openai, 2);   // pot 200 / 100
   assert.equal(odds.gemini, 2);
   assert.equal(odds.haiku, null);
 });
@@ -48,11 +48,11 @@ test('odds are pot/stake, null when nothing is on an agent', () => {
 test('bet validation: closed, unknown player/agent, non-positive, double, overdraw', () => {
   const { betting } = setup();
   const { playerId } = betting.join('Ava');
-  assert.throws(() => betting.placeBet('nope', 'deepseek', 10), BettingError);
+  assert.throws(() => betting.placeBet('nope', 'openai', 10), BettingError);
   assert.throws(() => betting.placeBet(playerId, 'nobody', 10), BettingError);
-  assert.throws(() => betting.placeBet(playerId, 'deepseek', 0), BettingError);
-  assert.throws(() => betting.placeBet(playerId, 'deepseek', 999), BettingError);
-  betting.placeBet(playerId, 'deepseek', 10);
+  assert.throws(() => betting.placeBet(playerId, 'openai', 0), BettingError);
+  assert.throws(() => betting.placeBet(playerId, 'openai', 999), BettingError);
+  betting.placeBet(playerId, 'openai', 10);
   assert.throws(() => betting.placeBet(playerId, 'gemini', 10), BettingError); // one bet per round
   betting.lock();
   const p2 = betting.join('Ben');
@@ -62,11 +62,11 @@ test('bet validation: closed, unknown player/agent, non-positive, double, overdr
 test('settle splits the whole pot among backers of the winner', () => {
   const { betting, events } = setup();
   const a = betting.join('A'); const b = betting.join('B'); const c = betting.join('C');
-  betting.placeBet(a.playerId, 'deepseek', 60);  // winner backer
-  betting.placeBet(b.playerId, 'deepseek', 40);  // winner backer
+  betting.placeBet(a.playerId, 'openai', 60);  // winner backer
+  betting.placeBet(b.playerId, 'openai', 40);  // winner backer
   betting.placeBet(c.playerId, 'gemini', 100);   // loser
   betting.lock();
-  const res = betting.settle('deepseek');         // pot 200, 100 on deepseek
+  const res = betting.settle('openai');         // pot 200, 100 on openai
   assert.equal(res.pot, 200);
   const pa = res.payouts.find((p) => p.playerId === a.playerId);
   const pc = res.payouts.find((p) => p.playerId === c.playerId);
@@ -81,7 +81,7 @@ test('no winner or no backers -> everyone is refunded', () => {
   const a = betting.join('A');
   betting.placeBet(a.playerId, 'gemini', 70);
   betting.lock();
-  const res = betting.settle('deepseek'); // nobody on deepseek
+  const res = betting.settle('openai'); // nobody on openai
   assert.equal(res.refunded, true);
   assert.equal(res.payouts[0].payout, 70);
   assert.equal(betting.players.get(a.playerId).balance, 100); // got the stake back
@@ -90,7 +90,7 @@ test('no winner or no backers -> everyone is refunded', () => {
 test('reset clears bets but keeps players and balances', () => {
   const { betting } = setup();
   const a = betting.join('A');
-  betting.placeBet(a.playerId, 'deepseek', 30);
+  betting.placeBet(a.playerId, 'openai', 30);
   betting.reset(2);
   assert.equal(betting.pot(), 0);
   assert.equal(betting.round, 2);

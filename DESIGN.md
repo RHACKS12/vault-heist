@@ -66,7 +66,7 @@ Everything hangs off a single typed event stream. A milestone event updates a pa
 flowchart LR
   subgraph Crew [Agent runners]
     A1[Gemini Flash]
-    A2[DeepSeek]
+    A2[OpenAI]
     A3[Haiku *optional*]
   end
   A1 & A2 & A3 --> BUS((Event bus))
@@ -91,7 +91,7 @@ type GameEvent = {
   round: number;
   ts: number;                 // ms epoch; replay uses deltas
   source: "agent" | "judge" | "betting" | "game";
-  agent?: "gemini" | "deepseek" | "haiku";
+  agent?: "gemini" | "openai" | "haiku";
   type:
     | "phase_change"          // payload.phase
     | "exploring" | "found_dir" | "opened_file" | "submitted"   // milestones
@@ -133,7 +133,7 @@ vault-heist/
 │  │  ├─ agents/
 │  │  │  ├─ runner.ts           # shared tool-use loop
 │  │  │  ├─ gemini.ts
-│  │  │  ├─ deepseek.ts
+│  │  │  ├─ openai.ts
 │  │  │  └─ haiku.ts
 │  │  ├─ announcer.ts           # ElevenLabs TTS + queue + cache
 │  │  ├─ recorder.ts
@@ -164,7 +164,7 @@ Pure Node implementations (no `child_process` to system `grep`/`strings` — kee
 One shared async tool-use loop; each provider file adapts the API:
 
 - **Gemini Flash** — `@google/genai`, function calling. Strategy: **grep strings first**. (Also claims Best Use of Gemini.)
-- **DeepSeek** — `openai` npm package pointed at `https://api.deepseek.com`. Strategy: **walk the filesystem**.
+- **OpenAI (ChatGPT)** — `openai` npm package (`gpt-4o-mini`). Strategy: **walk the filesystem**. (Swapped in for DeepSeek; the `openai-compatible` core still supports DeepSeek via a baseURL.)
 - **Haiku (optional)** — `@anthropic-ai/sdk`, tool use. Strategy: **inspect binaries first**.
 
 Each loop: send system prompt + tools → model calls a tool → run it in the sandbox → feed result back → repeat until the model calls the special `submit(finding)` tool or hits a step cap. Crossing a milestone threshold emits a bus event; streamed thoughts emit `reasoning_token`.
@@ -281,7 +281,7 @@ Pull the exact values straight from the CVE advisory / IoTGoat writeup — don't
 
 ```
 GEMINI_API_KEY=
-DEEPSEEK_API_KEY=
+OPENAI_API_KEY=
 ANTHROPIC_API_KEY=          # Haiku, optional
 ELEVENLABS_API_KEY=
 HOST_TOKEN=                 # gate host controls

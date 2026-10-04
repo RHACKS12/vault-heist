@@ -6,7 +6,7 @@
 
 export const CREW = [
   { id: 'gemini', name: 'Gemini', strategy: 'grep strings' },
-  { id: 'deepseek', name: 'DeepSeek', strategy: 'walk the files' },
+  { id: 'openai', name: 'OpenAI', strategy: 'walk the files' },
   { id: 'haiku', name: 'Haiku', strategy: 'inspect binaries' },
 ];
 

@@ -1,27 +1,82 @@
-// Gemini Flash provider adapter — STUB.
+// Gemini Flash provider adapter (@google/genai).
 //
-// Wired up in the next step (real-provider wiring) with the @google/genai SDK.
-// Intended mapping:
-//   - new GoogleGenAI({ apiKey }); model: a Flash model id (confirm current id).
-//   - Translate normalized `tools` -> functionDeclarations; our JSON-Schema
-//     `parameters` map onto Gemini's function parameter schema.
-//   - Translate normalized `messages` -> contents[], with tool results sent back
-//     as functionResponse parts.
-//   - Return { thought, toolCalls:[{id,name,args}] } or {} when the model stops.
-//   - Include usage:{ inputTokens, outputTokens } from the response so the race
-//     cost cap can bill this step (see cost.js / pricing.js). Without it, this
-//     agent's spend is invisible to the cap.
+// One step of the tool-use loop: translate the normalized history + tool schemas
+// into Gemini's `contents` + `functionDeclarations`, call generateContent once,
+// and translate the reply back into { thought?, toolCalls?, usage }.
 //
-// Strategy for this crew member: grep strings first. Also feeds "Best Use of Gemini".
-import { NotWiredError } from './not-wired.js';
+// Gemini has no tool-call ids and matches function responses by NAME, so we
+// synthesize ids for the runner's bookkeeping and translate tool results back by
+// name. Strategy for this crew member: grep for suspicious strings first.
+import { GoogleGenAI } from '@google/genai';
 
-export function createGeminiProvider({ apiKey = process.env.GEMINI_API_KEY, model = 'gemini-2.5-flash' } = {}) {
+const MAX_TOKENS = 1024;
+
+/** Split the normalized history into Gemini contents[] + a systemInstruction. */
+export function toGeminiRequest(messages) {
+  let systemInstruction = '';
+  const contents = [];
+  for (const m of messages) {
+    if (m.role === 'system') { systemInstruction = [systemInstruction, m.text].filter(Boolean).join('\n'); continue; }
+    if (m.role === 'user') { contents.push({ role: 'user', parts: [{ text: m.text ?? '' }] }); continue; }
+    if (m.role === 'tool') {
+      contents.push({ role: 'user', parts: [{ functionResponse: { name: m.name, response: asObject(m.result) } }] });
+      continue;
+    }
+    // assistant
+    const parts = [];
+    if (m.text) parts.push({ text: m.text });
+    for (const tc of m.toolCalls ?? []) parts.push({ functionCall: { name: tc.name, args: tc.args ?? {} } });
+    contents.push({ role: 'model', parts });
+  }
+  return { systemInstruction, contents };
+}
+
+/** Our tool defs -> Gemini functionDeclarations. */
+export function toGeminiFunctionDeclarations(tools) {
+  return tools.map((t) => ({ name: t.name, description: t.description, parameters: t.parameters }));
+}
+
+/** A Gemini response -> normalized step. */
+export function fromGeminiResponse(resp) {
+  const parts = resp?.candidates?.[0]?.content?.parts ?? [];
+  const usage = {
+    inputTokens: resp?.usageMetadata?.promptTokenCount ?? 0,
+    outputTokens: resp?.usageMetadata?.candidatesTokenCount ?? 0,
+  };
+  let thought = '';
+  const toolCalls = [];
+  for (const p of parts) {
+    if (p.text) thought += p.text;
+    if (p.functionCall) {
+      toolCalls.push({ id: `${p.functionCall.name}-${toolCalls.length}`, name: p.functionCall.name, args: p.functionCall.args ?? {} });
+    }
+  }
+  return { thought, toolCalls, usage };
+}
+
+export function createGeminiProvider({ apiKey = process.env.GEMINI_API_KEY, model = 'gemini-2.5-flash', client } = {}) {
+  const sdk = client ?? (apiKey ? new GoogleGenAI({ apiKey }) : null);
   return {
     name: 'gemini',
     model,
-    async step() {
-      throw new NotWiredError('gemini', 'GEMINI_API_KEY', '@google/genai');
+    _hasKey: Boolean(apiKey) || Boolean(client),
+    async step({ messages, tools }) {
+      if (!sdk) throw new Error('gemini: no API key configured');
+      const { systemInstruction, contents } = toGeminiRequest(messages);
+      const resp = await sdk.models.generateContent({
+        model,
+        contents,
+        config: {
+          systemInstruction,
+          maxOutputTokens: MAX_TOKENS,
+          tools: [{ functionDeclarations: toGeminiFunctionDeclarations(tools) }],
+        },
+      });
+      return fromGeminiResponse(resp);
     },
-    _hasKey: Boolean(apiKey),
   };
+}
+
+function asObject(v) {
+  return v && typeof v === 'object' && !Array.isArray(v) ? v : { result: v };
 }
