@@ -1,0 +1,19 @@
+{
+  "new_round": "/announcer/new_round.mp3",
+  "bets_open": "/announcer/bets_open.mp3",
+  "bets_closed": "/announcer/bets_closed.mp3",
+  "race_start": "/announcer/race_start.mp3",
+  "no_crack": "/announcer/no_crack.mp3",
+  "found:gemini": "/announcer/found_gemini.mp3",
+  "opened:gemini": "/announcer/opened_gemini.mp3",
+  "submitted:gemini": "/announcer/submitted_gemini.mp3",
+  "won:gemini": "/announcer/won_gemini.mp3",
+  "found:deepseek": "/announcer/found_deepseek.mp3",
+  "opened:deepseek": "/announcer/opened_deepseek.mp3",
+  "submitted:deepseek": "/announcer/submitted_deepseek.mp3",
+  "won:deepseek": "/announcer/won_deepseek.mp3",
+  "found:haiku": "/announcer/found_haiku.mp3",
+  "opened:haiku": "/announcer/opened_haiku.mp3",
+  "submitted:haiku": "/announcer/submitted_haiku.mp3",
+  "won:haiku": "/announcer/won_haiku.mp3"
+}
