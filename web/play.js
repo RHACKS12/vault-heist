@@ -2,7 +2,7 @@
 // see your payout. Uses the shared reducer for live phase/odds/winner state;
 // fx.js adds the motion on top of what render() draws.
 import { initialState, reduce, CREW } from '/reducer.js';
-import { gsap, animated, countTo, slam, swapText, entrance, mark, unmark } from '/fx.js';
+import { gsap, animated, countTo, slam, shake, swapText, entrance, mark, unmark } from '/fx.js';
 
 let state = initialState();
 
@@ -82,8 +82,9 @@ function render(live = true) {
   }[state.phase] ?? '';
   if (live) swapText($('phaseNote'), note); else $('phaseNote').textContent = note;
   const open = canBet();
-  $('betBtn').disabled = !open || !selected;
+  syncBetButton();
   $('amount').disabled = !open;
+  $('stack').disabled = !open;
   for (const c of document.querySelectorAll('.chip')) c.disabled = !open;
   renderPicks();
   renderResult(live);
@@ -157,14 +158,62 @@ $('joinForm').addEventListener('submit', async (e) => {
   btn.disabled = false;
 });
 
+// ---- the wager: tapped chips stack up; the stack always matches the amount ----
+const DENOMS = [100, 50, 25];
+const MAX_SHOWN = 8;  // discs drawn per pile; taller piles show a count instead
+let pile = [];        // chip values in the order they went down
+const pileTotal = () => pile.reduce((s, v) => s + v, 0);
+/** Break an amount into the fewest chips, with any odd remainder as one loose chip. */
+const toChips = (n) => { const out = []; for (const d of DENOMS) while (n >= d) { out.push(d); n -= d; } if (n > 0) out.push(n); return out; };
+const denomOf = (v) => (DENOMS.includes(v) ? v : 'odd');
+
+function setPile(next, { dropped = null, syncInput = true } = {}) {
+  pile = next;
+  const total = pileTotal();
+  if (syncInput) $('amount').value = total;
+  const piles = $('piles');
+  piles.replaceChildren();
+  for (const d of [...DENOMS, 'odd']) {
+    const n = pile.filter((v) => denomOf(v) === d).length;
+    if (!n) continue;
+    const col = document.createElement('span');
+    col.className = `pile c${d}`;
+    for (let i = 0; i < Math.min(n, MAX_SHOWN); i++) col.appendChild(document.createElement('i'));
+    const count = document.createElement('b');
+    count.textContent = d === 'odd' ? pile.filter((v) => denomOf(v) === 'odd').reduce((s, v) => s + v, 0) : `${d}×${n}`;
+    col.appendChild(count);
+    piles.appendChild(col);
+    if (animated && dropped != null && denomOf(dropped) === d) {
+      const top = col.querySelectorAll('i')[Math.min(n, MAX_SHOWN) - 1];
+      gsap.fromTo(top, { y: -42, autoAlpha: 0, rotation: gsap.utils.random(-12, 12) }, { y: 0, autoAlpha: 1, rotation: 0, duration: 0.42, ease: 'bounce.out', clearProps: 'all' });
+    }
+  }
+  $('stack').classList.toggle('empty', !pile.length);
+  $('stackHint').textContent = pile.length ? 'TAP THE STACK TO CLEAR' : 'TAP CHIPS TO STACK THEM';
+  $('stack').setAttribute('aria-label', pile.length ? `Your stack: ${total} chips. Clear it` : 'Your stack is empty');
+  syncBetButton();
+}
+
+function syncBetButton() {
+  $('betBtn').disabled = !canBet() || !selected || !(Math.floor(Number($('amount').value)) >= 1);
+}
+
 for (const chip of document.querySelectorAll('.chip')) {
   chip.addEventListener('click', () => {
-    const want = chip.dataset.chips === 'all' ? store.balance : Number(chip.dataset.chips);
-    const amount = $('amount');
-    amount.value = Math.max(1, Math.min(want, store.balance));
-    if (animated) gsap.fromTo(amount, { scale: 1.08 }, { scale: 1, duration: 0.35, ease: 'back.out(3)', clearProps: 'scale' });
+    const room = store.balance - pileTotal();
+    if (chip.dataset.chips === 'all') { setPile(toChips(store.balance), { dropped: DENOMS[0] }); return; }
+    if (room <= 0) { shake($('stack'), 4); return; } // already all in
+    const value = Math.min(Number(chip.dataset.chips), room);
+    setPile([...pile, value], { dropped: value });
+    navigator.vibrate?.(8);
   });
 }
+$('stack').addEventListener('click', () => { if (pile.length) setPile([]); });
+$('amount').addEventListener('input', () => {
+  const n = Math.max(0, Math.min(Math.floor(Number($('amount').value)) || 0, store.balance));
+  setPile(toChips(n), { syncInput: false }); // typing redraws the stack without fighting the field
+});
+setPile([]);
 
 $('betBtn').addEventListener('click', async () => {
   if (!selected || !canBet()) return;
@@ -175,6 +224,7 @@ $('betBtn').addEventListener('click', async () => {
     if (res.ok) {
       store.setBalance(res.balance);
       myBetRound = state.round;
+      setPile([]); // the chips went on the table
       const odds = state.odds?.[selected];
       status.textContent = `Bet confirmed: ${amount} chips on ${nameOf(selected)}${odds ? ` at ×${odds}` : ''}.`;
       $('slipStamp').hidden = false;
