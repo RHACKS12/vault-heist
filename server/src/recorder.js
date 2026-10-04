@@ -5,6 +5,7 @@
 // pitch never depends on a live model or the venue WiFi.
 import fsp from 'node:fs/promises';
 import path from 'node:path';
+import { SOURCES } from './events.js';
 
 export class Recorder {
   constructor({ bus }) {
@@ -23,7 +24,9 @@ export class Recorder {
     this.label = String(label).replace(/[^\w.-]+/g, '-').slice(0, 48) || 'run';
     this.startedAt = Date.now();
     this.recording = true;
-    this._unsub = this.bus.subscribe((e) => this.events.push(e));
+    // Record only source events; `announce` is a derived presentation layer the
+    // announcer regenerates on playback, so recordings stay pure.
+    this._unsub = this.bus.subscribe((e) => { if (e.source !== SOURCES.ANNOUNCER) this.events.push(e); });
     return { recording: true, label: this.label };
   }
 

@@ -5,6 +5,43 @@ See `DESIGN.md` for the overall plan and `CONTRIBUTING.md` for the workflow.
 
 ---
 
+## 2026-10-04 — Milestone 6: announcer (scaffolded, mock-first)
+
+> ⚠️ **Real voices need `ELEVENLABS_API_KEY`** (Milestone 6b). The announcer
+> already works without it via the browser's built-in speech. See `.env.example`.
+
+**Shipped** (feature branch `claude/sharp-galileo-r5rmuk` → merged to `main`):
+
+- **`announcer/lines.js`** — pure event→line mapping with the heist-crew persona.
+  Only milestones/phases get a line (found a directory, opened the file,
+  submitted, won, and the fixed "place your bets / and they're off / nobody
+  cracked it" calls); tool noise is silent. Priorities: win 3, submit/phase 2,
+  progress 1.
+- **`announcer/announcer.js`** — subscribes to the bus, synthesizes audio via a
+  TTS provider (caches fixed lines), and emits `announce` events. Never announces
+  its own events (no loop).
+- **TTS providers** — `mock-tts.js` (returns no clip → browser speech fallback,
+  audible today) and `elevenlabs.js` (stub, throws `NotWiredError` until 6b, with
+  the intended synth + cache + served-clip mapping documented).
+- **Dashboard** — a **🔊 ANNOUNCER** on/off toggle (audio needs a user gesture),
+  a priority playback queue (wins jump ahead, stale low-priority dropped), and a
+  live `📣` caption under the verdict.
+- **Design decision — narration is derived.** The announcer regenerates lines
+  from the event stream, so it narrates **replays** too; recordings therefore
+  exclude `announce` events (recorder filters `source === 'announcer'`), and the
+  existing `demo-clean.jsonl` needed no change. Verified: replaying it produced
+  the full call ("And they're off!" → "DeepSeek just broke into the etc vault!" →
+  "We have a winner!") with captions. See `docs/announcer.png`.
+- **7 new tests** (lines + pipeline + replay narration + no-loop).
+
+**Total tests: 69 green** (57 server + 12 web).
+
+**Next — the last key-dependent pieces:** Milestone 3b (real agent models) and
+Milestone 6b (ElevenLabs voices). Everything else — the full interactive,
+bulletproof, narrated demo — runs today with no keys.
+
+---
+
 ## 2026-10-04 — Milestone 7: record & replay (bulletproof demo path)
 
 **Shipped** (feature branch `claude/sharp-galileo-r5rmuk` → merged to `main`):

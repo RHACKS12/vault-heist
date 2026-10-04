@@ -20,8 +20,9 @@ PORT=4000 npm start
 | `sandbox.js` | `Sandbox` — the four read-only firmware tools, jailed to one rootfs. |
 | `server.js` | `createServer()` — HTTP `/health`, command routes, WebSocket fan-out, and static hosting of the dashboard + player screen. |
 | `betting.js` | `Betting` — the pari-mutuel pool (join, bet, odds, lock, settle). |
-| `recorder.js` | `Recorder` — capture the event stream to a `.jsonl`. |
+| `recorder.js` | `Recorder` — capture the event stream to a `.jsonl` (excludes derived `announce` events). |
 | `replayer.js` | `Replayer` — re-emit a recording onto the bus at a watchable cadence. |
+| `announcer/` | The announcer — event→line, TTS, `announce` events. |
 | `index.js` | Wires it together, exposes the command API, and starts listening. |
 | `config.js` | Paths (`DEFAULT_ROOTFS`, `WEB_ROOT`) and `PORT`. |
 | `agents/` | The crew — see below. |
@@ -131,3 +132,20 @@ await sb.strings('/usr/bin/shellback');        // { path, min, lines:[...], trun
   `ELOOP`, `EREGEX`).
 
 These are the exact tools the agents (Milestone 3) will be given — not a shell.
+
+## Announcer (Milestone 6)
+
+The announcer is a **derived presentation layer**. `announcer/lines.js` maps a
+milestone/phase event to a heist-crew line (only `found_dir`, `opened_file`,
+`submitted`, `won`, and the fixed "place your bets / and they're off" calls —
+tool noise is silent). `announcer/announcer.js` subscribes to the bus,
+synthesizes audio via a TTS provider (caching fixed lines), and emits `announce`
+events; the dashboard plays them with a **priority queue** (wins/submissions jump
+ahead) and a live caption. Because it regenerates from the stream, it narrates
+**replays** too — which is why recordings exclude `announce` events.
+
+TTS providers: `providers/mock-tts.js` returns no clip, so the dashboard falls
+back to the browser's speech synthesis (audible with no key).
+`providers/elevenlabs.js` is a stub until `ELEVENLABS_API_KEY` is wired
+(Milestone 6b): synthesize audio, cache fixed lines to a served dir, return the
+clip URL.

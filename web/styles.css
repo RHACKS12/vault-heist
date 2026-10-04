@@ -69,6 +69,9 @@ body {
 .vault[data-state="cracked"] .cracked-stamp { display: flex; }
 .verdict { margin-top: 12px; font-size: 18px; letter-spacing: 2px; min-height: 24px; text-align: center; }
 .verdict b { color: var(--red); }
+.announcer { margin-top: 6px; min-height: 22px; text-align: center; font-size: 15px; letter-spacing: 1px; color: var(--ink-soft); font-style: italic; }
+.announcer.flash { animation: annFlash 0.5s ease-out; }
+@keyframes annFlash { from { color: var(--red); transform: scale(1.04); } to { color: var(--ink-soft); transform: scale(1); } }
 
 /* ---------- crew ---------- */
 .crew { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
