@@ -16,6 +16,11 @@ The betting lobby (live pari-mutuel odds) and the phone player screen:
 ![Betting lobby](docs/dashboard-lobby.png)
 ![Player screen](docs/player.png)
 
+The pitch runs on **replay** — the same dashboard, streamed from a committed
+recording, so a model refusal or dead WiFi can't break the demo:
+
+![Replay in progress](docs/replay.png)
+
 ## How it works
 
 Players join on their phones, each places one bet on an agent, bets **lock**,
@@ -73,9 +78,9 @@ npm run race         # start + run a full auto demo: bots join, bet, lock, and r
 | Milestone 3 — agent loop + judge + race (mock-tested) | ✅ done |
 | Milestone 4 — observer dashboard (served + mock-race demo) | ✅ done |
 | Milestone 5 — multi-device lobby + pari-mutuel betting | ✅ done |
+| Milestone 7 — record & replay (bulletproof demo path) | ✅ done |
 | Milestone 3b — wire real providers (Gemini / DeepSeek / Haiku) | ⬜ **needs API keys** (see `.env.example`) |
-| Milestone 6 — ElevenLabs announcer | ⬜ |
-| Milestone 7 — record & replay | ⬜ |
+| Milestone 6 — ElevenLabs announcer | ⬜ **needs** `ELEVENLABS_API_KEY` |
 
 See [`docs/progress.md`](./docs/progress.md) for the detailed log.
 

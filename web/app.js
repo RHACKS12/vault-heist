@@ -51,6 +51,8 @@ const els = {
   hostLock: document.getElementById('hostLock'),
   hostReset: document.getElementById('hostReset'),
   runRace: document.getElementById('runRace'),
+  recBtn: document.getElementById('recBtn'),
+  replayBtn: document.getElementById('replayBtn'),
 };
 els.joinUrl.textContent = `${location.host}/play.html`;
 
@@ -125,9 +127,10 @@ function connect() {
 
 // ---- host controls ----
 const hostToken = () => { try { return localStorage.getItem('hostToken') || ''; } catch { return ''; } };
-async function host(path) {
-  try { await fetch(path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token: hostToken() }) }); }
-  catch { /* ignore */ }
+async function host(path, extra = {}) {
+  try {
+    return await (await fetch(path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token: hostToken(), ...extra }) })).json();
+  } catch { return null; }
 }
 els.hostOpen.addEventListener('click', () => host('/api/host/open'));
 els.hostLock.addEventListener('click', () => host('/api/host/lock'));
@@ -135,6 +138,27 @@ els.hostReset.addEventListener('click', () => host('/api/host/reset'));
 els.runRace.addEventListener('click', async () => {
   els.runRace.disabled = true;
   try { await fetch('/api/demo/race', { method: 'POST' }); } catch { /* ignore */ }
+});
+
+// record toggle
+let recording = false;
+els.recBtn.addEventListener('click', async () => {
+  if (!recording) {
+    await host('/api/record/start', { label: 'live' });
+    recording = true; els.recBtn.textContent = '■ STOP REC'; els.recBtn.classList.add('rec-on');
+  } else {
+    const r = await host('/api/record/stop');
+    recording = false; els.recBtn.textContent = '● REC'; els.recBtn.classList.remove('rec-on');
+    if (r?.file) els.recBtn.title = `saved ${r.file} (${r.count} events)`;
+  }
+});
+
+// replay the committed clean run (the bulletproof demo path)
+els.replayBtn.addEventListener('click', async () => {
+  els.replayBtn.disabled = true;
+  els.replayBtn.textContent = '▶ REPLAYING…';
+  await host('/api/replay', { name: 'demo-clean.jsonl' });
+  setTimeout(() => { els.replayBtn.disabled = false; els.replayBtn.textContent = '▶ REPLAY'; }, 6000);
 });
 
 render();
