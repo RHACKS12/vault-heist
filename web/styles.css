@@ -214,7 +214,7 @@ html:not(.has-gsap) .vault[data-state="racing"] .vault-dial { transform-origin: 
 .ticket-copy { display: flex; flex-direction: column; gap: .3rem; min-width: 0; padding-left: .9rem; border-left: 1px dashed #9c8b73; }
 .ticket-kicker { font-size: .6rem; font-weight: 700; letter-spacing: .2em; color: var(--red); }
 .ticket-copy b { font-family: var(--display); font-weight: 400; font-size: .85rem; line-height: 1.2; }
-.ticket-copy code { font: inherit; font-size: .62rem; overflow-wrap: normal; color: var(--ink-soft); }
+.ticket-copy code { font: inherit; font-size: .62rem; overflow-wrap: anywhere; color: var(--ink-soft); }
 .join-warn { margin: .8rem 0 0; font-size: .65rem; line-height: 1.45; color: #e9b8a8; }
 .join-warn code { font: inherit; color: var(--card); }
 
@@ -342,7 +342,7 @@ html:not(.has-gsap) .vault[data-state="racing"] .vault-dial { transform-origin: 
 .qr-card .section-kicker { color: var(--red); margin: 0; }
 .qr-card h2 { font-size: clamp(1.4rem, 3vw, 2.6rem); margin: 0; }
 .qr-big { width: min(62vh, 78vw); aspect-ratio: 1; }
-.qr-url { font: inherit; font-size: clamp(1rem, 1.6vw, 1.5rem); font-weight: 700; letter-spacing: .04em; }
+.qr-url { max-width: 100%; font: inherit; font-size: clamp(1rem, 1.6vw, 1.5rem); font-weight: 700; letter-spacing: .04em; overflow-wrap: anywhere; }
 .qr-meta { display: flex; gap: 2rem; margin: 0; font-size: .75rem; letter-spacing: .12em; color: var(--ink-soft); }
 .qr-meta b { color: var(--red); font-size: 1rem; }
 .qr-card form { margin: 0; }

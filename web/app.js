@@ -419,9 +419,10 @@ resolveJoinUrl().then(({ url, reachable }) => {
   const text = prettyUrl(url);
   els.joinQr.innerHTML = qrSvg(url, `QR code for ${text}`);
   els.joinQrBig.innerHTML = qrSvg(url, `QR code for ${text}`);
-  // break before the path, not mid-address
+  // break after each dot in the host and before the path, so a long host wraps inside the ticket
   const cut = text.indexOf('/');
-  els.joinUrl.replaceChildren(text.slice(0, cut), document.createElement('wbr'), text.slice(cut));
+  const parts = [...text.slice(0, cut).split(/(?<=\.)/), text.slice(cut)];
+  els.joinUrl.replaceChildren(...parts.flatMap((part, i) => (i ? [document.createElement('wbr'), part] : [part])));
   els.joinUrlBig.textContent = text;
   els.joinWarn.hidden = reachable;
 });
