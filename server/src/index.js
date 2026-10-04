@@ -23,7 +23,7 @@ import { Announcer } from './announcer/announcer.js';
 import { createServer } from './server.js';
 import { joinUrls } from './lan.js';
 import { DEFAULT_ROOTFS, WEB_ROOT, RECORDINGS_DIR, PORT, RACE_COST_CAP_USD, RACE_COOLDOWN_MS } from './config.js';
-import { loadAnswerKey, getRound } from './agents/answer.js';
+import { loadAnswerKey, pickRound } from './agents/answer.js';
 import { Race } from './agents/race.js';
 import { mockSolver, mockWanderer } from './agents/providers/mock.js';
 import { CREW, buildRealCrew, configuredAgents } from './agents/crew.js';
@@ -56,14 +56,18 @@ function loadAnnouncerClips() {
 }
 
 const answerKey = await loadAnswerKey('iotgoat');
-const round = getRound(answerKey); // default round: hardcoded-credentials
+// ROUND unset = the default round every race (what the demo recording proved);
+// ROUND=<name> pins one round; ROUND=random picks a fresh one each race.
+const ROUND_MODE = process.env.ROUND?.trim() || '';
+if (ROUND_MODE && ROUND_MODE !== 'random') pickRound(answerKey, ROUND_MODE); // fail fast on a typo
+let lastRound = null;
 
 let racing = false;
 let lastRaceEndedAt = 0;
 
 /** The scripted mock crew — keyless and deterministic, so the demo + replay
  *  path always produces a clean, exciting race. */
-function buildMockRace() {
+function buildMockRace(round) {
   return new Race({
     bus, game, sandbox, round,
     costCapUsd: RACE_COST_CAP_USD,
@@ -78,24 +82,33 @@ function buildMockRace() {
 /** The real crew: each agent with an API key runs its real model; any agent
  *  without a key falls back to a mock wanderer so the roster stays complete and
  *  the race still runs. The shared $2 cost cap meters real spend. */
-function buildRealRace() {
+function buildRealRace(round) {
   const real = new Map(buildRealCrew().map((m) => [m.agent, m]));
   const agents = CREW.map((m) =>
     real.get(m.agent) ?? { agent: m.agent, strategy: m.strategy, provider: mockWanderer({ steps: 5 }) });
   return new Race({ bus, game, sandbox, round, costCapUsd: RACE_COST_CAP_USD, agents });
 }
 
-/** RACING -> run the crew (given its builder) -> settle the pot on the winner. */
-async function startRaceAndSettle(buildRace) {
+/** Refuse a race while one runs or during the cooldown after the last. */
+function requireRaceReady() {
   if (racing) throw httpError('a race is already in progress', 409);
   const waitMs = lastRaceEndedAt + RACE_COOLDOWN_MS - Date.now();
   if (waitMs > 0) throw httpError(`race cooldown — try again in ${Math.ceil(waitMs / 1000)}s`, 429);
+}
+
+/** RACING -> run the crew (given its builder) -> settle the pot on the winner. */
+async function startRaceAndSettle(buildRace) {
+  requireRaceReady();
   racing = true;
   try {
+    // chosen after bets lock, so nobody can bet on the problem
+    const round = pickRound(answerKey, ROUND_MODE, { last: lastRound });
+    lastRound = round.name;
+    if (ROUND_MODE) console.log(`[vault-heist] race round: ${round.name}`);
     game.startRace();
-    const { winner, cost } = await buildRace().run();
+    const { winner, cost } = await buildRace(round).run();
     betting.settle(winner);
-    return { winner, cost };
+    return { winner, cost, round: round.name };
   } finally {
     racing = false;
     lastRaceEndedAt = Date.now();
@@ -115,6 +128,7 @@ function requireNotReplaying() {
 
 /** Full auto demo: bots join + bet, then lock + race (so the pot is populated). */
 async function runDemoRace() {
+  requireRaceReady(); // before betting opens, so a refusal can't strand the game in BETS_LOCKED
   if (game.phase === 'SETTLED') { game.reset(); betting.reset(game.round); }
   if (game.phase !== 'LOBBY') throw httpError(`cannot start from phase ${game.phase}`, 409);
   game.openBetting(); betting.openRound();
