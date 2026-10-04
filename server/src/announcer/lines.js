@@ -14,7 +14,9 @@ export function keyFor(event) {
   switch (event.type) {
     case EVENT_TYPES.PHASE_CHANGE: {
       const to = event.payload?.to;
-      if (to === PHASES.BETTING_OPEN) return 'lobby';
+      if (to === PHASES.LOBBY) return 'new_round';          // fires on reset to a new round
+      if (to === PHASES.BETTING_OPEN) return 'bets_open';
+      if (to === PHASES.BETS_LOCKED) return 'bets_closed';
       if (to === PHASES.RACING) return 'race_start';
       if (to === PHASES.SETTLED && !event.payload?.winner) return 'no_crack';
       return null;

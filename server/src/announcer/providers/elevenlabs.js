@@ -28,5 +28,12 @@ export function createElevenLabsTTS({
     return Buffer.from(await res.arrayBuffer());
   }
 
-  return { name: 'elevenlabs', voiceId, model, toBuffer };
+  /** Account subscription info (character_count / character_limit). Costs no credits. */
+  async function subscription() {
+    const res = await fetch('https://api.elevenlabs.io/v1/user/subscription', { headers: { 'xi-api-key': apiKey } });
+    if (!res.ok) throw new Error(`ElevenLabs ${res.status}: ${(await res.text()).slice(0, 200)}`);
+    return res.json();
+  }
+
+  return { name: 'elevenlabs', voiceId, model, toBuffer, subscription };
 }
