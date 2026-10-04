@@ -5,6 +5,27 @@ See `DESIGN.md` for the overall plan and `CONTRIBUTING.md` for the workflow.
 
 ---
 
+## 2026-10-04 — Announcer voices live + full documentation
+
+- **ElevenLabs voices generated and committed** — all 17 catalog lines were
+  synthesized (voice `YOq2y2Up4RgXP2HyXjE5`, ~900 chars one-time) and committed
+  under `web/announcer/` with `manifest.json`. The server loads them at startup
+  (`announcer: 17 pre-generated clips loaded`) and plays them with zero runtime
+  TTS cost; browser speech remains the fallback when clips are absent.
+- **Fixes along the way:** `.env` is now auto-loaded for the server and scripts
+  (`src/env.js`, Node ≥ 20.12) — Node doesn't read `.env` on its own; and the
+  static server now serves `.mp3` as `audio/mpeg` (was `application/octet-stream`),
+  so clips play reliably.
+- **Catalog expanded to 17 fun lines** — new round, bets open, bets locked, and
+  they're off, time's up, plus punchier per-agent milestone calls.
+- **Full documentation pass:** rewrote `README.md` as a complete step-by-step
+  guide (setup → run → multi-device demo → replay → announcer → testing →
+  troubleshooting) and added `docs/RUNBOOK.md` (demo-day run-of-show).
+
+**Total tests: 70 green** (58 server + 12 web).
+
+---
+
 ## 2026-10-04 — Milestone 6: announcer (scaffolded, mock-first)
 
 > ⚠️ **Real voices need `ELEVENLABS_API_KEY`** (Milestone 6b). The announcer
