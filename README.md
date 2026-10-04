@@ -218,6 +218,12 @@ npm test         # the full test suite
 5. The pot pays out to the winner's backers; each player sees their result on
    their phone. Host clicks **NEW ROUND** to go again.
 
+> **Which problem each race uses:** `ROUND` in `.env`. Unset (the default) runs
+> the answer key's `defaultRound`, `hardcoded-credentials`, every race, which is
+> the setup the demo recording proved. A round name (`shellback-backdoor`,
+> `command-injection`) pins that problem; `ROUND=random` picks a different one
+> each race, after bets lock. Replays always replay their recorded run.
+
 > **Before exposing the server publicly, set `HOST_TOKEN` in `.env`.** It gates
 > every control action — open, **lock & start a real race** (which spends API
 > money), reset, record, replay, and the demo race — so random visitors can't

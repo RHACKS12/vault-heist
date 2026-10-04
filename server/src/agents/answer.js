@@ -20,6 +20,19 @@ export function getRound(answerKey, roundName) {
   return { name, ...round };
 }
 
+/**
+ * The round for the next race, per the ROUND setting: unset keeps the answer
+ * key's default (the proven demo round), a round name pins that round, and
+ * "random" picks any round except the previous one so back-to-back races differ.
+ */
+export function pickRound(answerKey, mode, { last = null, random = Math.random } = {}) {
+  if (!mode) return getRound(answerKey);
+  if (mode !== 'random') return getRound(answerKey, mode);
+  const names = Object.keys(answerKey.rounds ?? {});
+  const pool = names.length > 1 ? names.filter((n) => n !== last) : names;
+  return getRound(answerKey, pool[Math.floor(random() * pool.length)]);
+}
+
 /** The milestone target (vulnerable file + its directory) derived from a round. */
 export function roundTarget(round) {
   const file = round.file ?? null;
