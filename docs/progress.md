@@ -14,7 +14,7 @@ See `DESIGN.md` for the overall plan and `CONTRIBUTING.md` for the workflow.
   into the SDK's shape and back to `{ thought, toolCalls, usage, refused? }`:
   - `providers/openai-compatible.js` — shared Chat Completions core.
   - `providers/openai.js` (`gpt-4o-mini`), `providers/gemini.js`
-    (`@google/genai`, `gemini-2.5-flash`), `providers/haiku.js`
+    (`@google/genai`, `gemini-3.8-flash`), `providers/haiku.js`
     (`@anthropic-ai/sdk`, `claude-haiku-4-5`, with tool-result coalescing).
   - Every adapter reports token `usage`, so the **$2 per-race cost cap** meters
     real spend. Factories take an injectable `client` → unit-tested with fakes,

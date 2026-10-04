@@ -60,3 +60,18 @@ test('shouldStop halts the runner (another agent won)', async () => {
   const result = await runner.run();
   assert.equal(result.status, 'stopped');
 });
+
+test('a textless tool call still emits a reasoning line (describes the call)', async () => {
+  const { bus, events, session } = harness();
+  // Mimic gpt-4o-mini / gemini-flash: a tool call with no text at all.
+  const provider = { name: 'textless', async step() { return { thought: '', toolCalls: [{ id: 't1', name: 'grep', args: { pattern: 'iotgoatuser' } }] }; } };
+  const runner = new AgentRunner({
+    agent: 'openai', bus, session, provider,
+    onSubmit: async () => ({ correct: false }),
+    system: 'sys', task: 'task', maxSteps: 1,
+  });
+  await runner.run();
+  const reasoning = events.find((e) => e.type === EVENT_TYPES.REASONING_TOKEN);
+  assert.ok(reasoning, 'a reasoning token was emitted despite empty thought');
+  assert.match(reasoning.payload.text, /grep "iotgoatuser"/);
+});

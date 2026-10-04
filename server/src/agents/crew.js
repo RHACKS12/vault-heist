@@ -8,7 +8,7 @@ import { createHaikuProvider } from './providers/haiku.js';
 
 /** @type {CrewMember[]} */
 export const CREW = Object.freeze([
-  { agent: 'gemini', family: 'gemini', strategy: 'grep', model: 'gemini-2.5-flash', env: 'GEMINI_API_KEY' },
+  { agent: 'gemini', family: 'gemini', strategy: 'grep', model: 'gemini-3.8-flash', env: 'GEMINI_API_KEY' },
   { agent: 'openai', family: 'openai', strategy: 'walk', model: 'gpt-4o-mini', env: 'OPENAI_API_KEY' },
   { agent: 'haiku', family: 'haiku', strategy: 'binary', model: 'claude-haiku-4-5', env: 'ANTHROPIC_API_KEY', optional: true },
 ]);

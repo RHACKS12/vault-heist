@@ -62,7 +62,11 @@ export class AgentRunner {
         this._emit(EVENT_TYPES.REFUSED, { reason: step.refused.reason ?? 'refused' });
         return { status: 'refused' };
       }
+      // Show the panel something every step. Many models (gpt-4o-mini,
+      // gemini-flash) return a tool call with NO text, so fall back to a short
+      // description of what the agent is doing.
       if (step.thought) this._emit(EVENT_TYPES.REASONING_TOKEN, { text: step.thought });
+      else if (step.toolCalls?.length) this._emit(EVENT_TYPES.REASONING_TOKEN, { text: describeToolCalls(step.toolCalls) });
 
       messages.push({ role: 'assistant', text: step.thought, toolCalls: step.toolCalls ?? [] });
 
@@ -100,6 +104,16 @@ export class AgentRunner {
       round: this.round, source: SOURCES.AGENT, agent: this.agent, type, payload,
     }));
   }
+}
+
+/** A short human-readable line for a step whose model returned only tool calls,
+ *  e.g. `list_dir /etc` or `grep "iotgoatuser"`. */
+function describeToolCalls(calls) {
+  return calls.map((c) => {
+    const a = c.args ?? {};
+    const detail = a.pattern != null ? `"${a.pattern}"` : (a.path ?? a.finding ?? '');
+    return detail ? `${c.name} ${detail}` : c.name;
+  }).join(', ');
 }
 
 export { ALL_TOOLS };
