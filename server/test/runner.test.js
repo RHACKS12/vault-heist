@@ -75,3 +75,18 @@ test('a textless tool call still emits a reasoning line (describes the call)', a
   assert.ok(reasoning, 'a reasoning token was emitted despite empty thought');
   assert.match(reasoning.payload.text, /grep "iotgoatuser"/);
 });
+
+test('an agent that keeps submitting wrong gives up after 3 attempts', async () => {
+  const { bus, events, session } = harness();
+  let calls = 0;
+  const alwaysWrong = { name: 'ws', async step() { calls++; return { thought: 'maybe this', toolCalls: [{ id: `s${calls}`, name: 'submit', args: { finding: 'not it' } }] }; } };
+  const runner = new AgentRunner({
+    agent: 'openai', bus, session, provider: alwaysWrong,
+    onSubmit: async () => ({ correct: false }),
+    system: 'sys', task: 'task', maxSteps: 24,
+  });
+  const result = await runner.run();
+  assert.equal(result.status, 'gave_up');
+  assert.equal(result.submissions, 3);
+  assert.equal(events.filter((e) => e.type === EVENT_TYPES.SUBMITTED).length, 3, 'exactly 3 submit attempts');
+});
