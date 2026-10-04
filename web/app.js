@@ -53,6 +53,8 @@ const els = {
   runRace: document.getElementById('runRace'),
   recBtn: document.getElementById('recBtn'),
   replayBtn: document.getElementById('replayBtn'),
+  muteBtn: document.getElementById('muteBtn'),
+  announcer: document.getElementById('announcer'),
 };
 els.joinUrl.textContent = `${location.host}/play.html`;
 
@@ -120,7 +122,14 @@ function connect() {
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
   const ws = new WebSocket(`${proto}://${location.host}`);
   ws.onopen = () => { els.conn.classList.add('live'); els.conn.classList.remove('down'); };
-  ws.onmessage = (ev) => { try { state = reduce(state, JSON.parse(ev.data)); render(); } catch { /* ignore */ } };
+  ws.onmessage = (ev) => {
+    try {
+      const msg = JSON.parse(ev.data);
+      if (msg.type === 'announce') announce(msg.payload);   // audio cue (handled separately)
+      state = reduce(state, msg);
+      render();
+    } catch { /* ignore bad frame */ }
+  };
   ws.onclose = () => { els.conn.classList.remove('live'); els.conn.classList.add('down'); setTimeout(connect, 1500); };
   ws.onerror = () => ws.close();
 }
@@ -160,6 +169,51 @@ els.replayBtn.addEventListener('click', async () => {
   await host('/api/replay', { name: 'demo-clean.jsonl' });
   setTimeout(() => { els.replayBtn.disabled = false; els.replayBtn.textContent = '▶ REPLAY'; }, 6000);
 });
+
+// ---- announcer (audio cues) ----
+// The server emits `announce` events; the big screen plays them. Audio needs a
+// user gesture (autoplay policy), so it's off until the host enables it. Lines
+// with a `clip` url play that audio; otherwise we fall back to the browser's
+// built-in speech synthesis, so the announcer is audible even without a key.
+let announcerOn = false;
+const audioQueue = [];
+let speaking = false;
+
+els.muteBtn.addEventListener('click', () => {
+  announcerOn = !announcerOn;
+  els.muteBtn.textContent = `🔊 ANNOUNCER: ${announcerOn ? 'ON' : 'OFF'}`;
+  els.muteBtn.classList.toggle('rec-on', announcerOn);
+  if (announcerOn) { try { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; window.speechSynthesis.speak(u); } catch { /* no TTS */ } }
+  else { audioQueue.length = 0; try { window.speechSynthesis?.cancel(); } catch { /* ignore */ } speaking = false; }
+});
+
+function announce(a) {
+  if (!a?.text) return;
+  els.announcer.textContent = `📣 ${a.text}`;                       // caption always shows
+  els.announcer.classList.remove('flash'); void els.announcer.offsetWidth; els.announcer.classList.add('flash');
+  if (!announcerOn) return;
+  audioQueue.push(a);
+  audioQueue.sort((x, y) => (y.priority || 0) - (x.priority || 0)); // wins/submissions jump ahead
+  while (audioQueue.length > 4) audioQueue.pop();                    // drop stale low-priority stragglers
+  playNext();
+}
+
+function playNext() {
+  if (speaking || !audioQueue.length) return;
+  const a = audioQueue.shift();
+  speaking = true;
+  const done = () => { speaking = false; playNext(); };
+  if (a.clip) {
+    const audio = new Audio(a.clip);
+    audio.onended = done; audio.onerror = done;
+    audio.play().catch(done);
+  } else if (window.speechSynthesis) {
+    const u = new SpeechSynthesisUtterance(a.text);
+    u.rate = 1.05;
+    u.onend = done; u.onerror = done;
+    window.speechSynthesis.speak(u);
+  } else { done(); }
+}
 
 render();
 connect();

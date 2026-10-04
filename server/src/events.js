@@ -17,6 +17,7 @@ export const SOURCES = Object.freeze({
   AGENT: 'agent',
   JUDGE: 'judge',
   BETTING: 'betting',
+  ANNOUNCER: 'announcer',
 });
 
 /** Event types carried in GameEvent.type. */
@@ -35,6 +36,8 @@ export const EVENT_TYPES = Object.freeze({
   BET_PLACED: 'bet_placed',
   ODDS_UPDATE: 'odds_update',
   SETTLED: 'settled',
+  // announcer (derived presentation layer)
+  ANNOUNCE: 'announce',
 });
 
 /** The three safecrackers ("the crew"). */
