@@ -23,9 +23,9 @@ test('milestones advance a crew member monotonically', () => {
 
 test('reasoning tokens accumulate on the right agent', () => {
   const s = initialState();
-  reduce(s, ev('reasoning_token', 'deepseek', { text: 'first' }));
-  reduce(s, ev('reasoning_token', 'deepseek', { text: 'second' }));
-  assert.deepEqual(s.agents.deepseek.reasoning, ['first', 'second']);
+  reduce(s, ev('reasoning_token', 'openai', { text: 'first' }));
+  reduce(s, ev('reasoning_token', 'openai', { text: 'second' }));
+  assert.deepEqual(s.agents.openai.reasoning, ['first', 'second']);
   assert.equal(s.agents.gemini.reasoning.length, 0);
 });
 
@@ -38,9 +38,9 @@ test('submitted records the finding and reaches the final stage', () => {
 
 test('a win sets the global winner and flags the agent', () => {
   const s = initialState();
-  reduce(s, ev('won', 'deepseek', { matchedOn: [] }));
-  assert.equal(s.winner, 'deepseek');
-  assert.equal(s.agents.deepseek.won, true);
+  reduce(s, ev('won', 'openai', { matchedOn: [] }));
+  assert.equal(s.winner, 'openai');
+  assert.equal(s.agents.openai.won, true);
 });
 
 test('returning to the lobby resets the round state', () => {
@@ -74,10 +74,10 @@ test('phase_change to SETTLED with a winner is captured', () => {
 
 test('odds_update folds pot, odds, totals, counts, and open flag', () => {
   const s = initialState();
-  reduce(s, { type: 'odds_update', payload: { pot: 200, odds: { deepseek: 2 }, totals: { deepseek: 100 }, counts: { deepseek: 1 }, open: true }, round: 1 });
+  reduce(s, { type: 'odds_update', payload: { pot: 200, odds: { openai: 2 }, totals: { openai: 100 }, counts: { openai: 1 }, open: true }, round: 1 });
   assert.equal(s.pot, 200);
-  assert.equal(s.odds.deepseek, 2);
-  assert.equal(s.totals.deepseek, 100);
+  assert.equal(s.odds.openai, 2);
+  assert.equal(s.totals.openai, 100);
   assert.equal(s.bettingOpen, true);
 });
 
@@ -90,9 +90,9 @@ test('player_joined tracks the lobby size', () => {
 test('settled stores the payouts', () => {
   const s = initialState();
   const payouts = [{ playerId: 'a', payout: 120, won: true }];
-  reduce(s, { type: 'settled', payload: { winner: 'deepseek', pot: 200, payouts } });
+  reduce(s, { type: 'settled', payload: { winner: 'openai', pot: 200, payouts } });
   assert.deepEqual(s.payouts, payouts);
-  assert.equal(s.winner, 'deepseek');
+  assert.equal(s.winner, 'openai');
 });
 
 test('phase_change to BETTING_OPEN opens betting', () => {

@@ -13,7 +13,7 @@ function harness() {
   const events = [];
   bus.subscribe((e) => events.push(e));
   const sandbox = new Sandbox(DEFAULT_ROOTFS);
-  const session = new AgentSession({ agent: 'deepseek', bus, sandbox, target: { file: '/etc/shadow', dir: '/etc' } });
+  const session = new AgentSession({ agent: 'openai', bus, sandbox, target: { file: '/etc/shadow', dir: '/etc' } });
   return { bus, events, sandbox, session };
 }
 
@@ -21,7 +21,7 @@ test('a solver runs tools, emits reasoning + submitted, and submits correctly', 
   const { bus, events, session } = harness();
   let submitted = null;
   const runner = new AgentRunner({
-    agent: 'deepseek', bus, session,
+    agent: 'openai', bus, session,
     provider: mockSolver({ file: '/etc/shadow', finding: '/etc/shadow has hardcoded creds for iotgoatuser' }),
     onSubmit: async (s) => { submitted = s; return { correct: true, won: true, matchedOn: [] }; },
     system: 'sys', task: 'task',
@@ -38,7 +38,7 @@ test('a solver runs tools, emits reasoning + submitted, and submits correctly', 
 test('a refusal is reported as a race event, not a crash', async () => {
   const { bus, events, session } = harness();
   const runner = new AgentRunner({
-    agent: 'deepseek', bus, session,
+    agent: 'openai', bus, session,
     provider: mockRefuser('cannot help'),
     onSubmit: async () => ({ correct: false }),
     system: 'sys', task: 'task',
@@ -51,7 +51,7 @@ test('a refusal is reported as a race event, not a crash', async () => {
 test('shouldStop halts the runner (another agent won)', async () => {
   const { bus, session } = harness();
   const runner = new AgentRunner({
-    agent: 'deepseek', bus, session,
+    agent: 'openai', bus, session,
     provider: mockSolver({ file: '/etc/shadow', finding: 'x' }),
     onSubmit: async () => ({ correct: false }),
     shouldStop: () => true,

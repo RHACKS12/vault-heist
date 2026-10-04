@@ -70,7 +70,7 @@ recording onto the same bus, so a replay is visually identical to a live run.
 flowchart LR
   subgraph Crew [Agents]
     A1[Gemini] --> BUS
-    A2[DeepSeek] --> BUS
+    A2[OpenAI] --> BUS
     A3[Haiku] --> BUS
   end
   JUDGE[Judge] --> BUS((Event bus))
@@ -156,13 +156,16 @@ When you're ready, put keys in a `.env` file at the repo root (copy
 
 ```
 GEMINI_API_KEY=...
-DEEPSEEK_API_KEY=...
+OPENAI_API_KEY=...        # ChatGPT crew member (gpt-4o-mini)
 ANTHROPIC_API_KEY=...     # Haiku (optional crew member)
 ```
 
 `.env` is auto-loaded (it's gitignored — never commit it). The provider adapters
-in `server/src/agents/providers/{gemini,deepseek,haiku}.js` are stubs until
-implemented; each documents its SDK mapping.
+in `server/src/agents/providers/{gemini,openai,haiku}.js` are wired to their SDKs.
+When you lock betting as host, each agent with a key set runs its real model;
+agents without a key fall back to a mock so the race still runs. A shared **$2
+per-race cost cap** (`RACE_COST_CAP_USD`) meters real spend. The "Run demo race"
+button and replays stay fully mock and keyless.
 
 ### 4. (Optional) Announcer voices — already generated
 
@@ -255,7 +258,7 @@ recorder/replayer, the announcer, and the dashboard reducer.
 | M1 event bus + state machine · M2 sandbox · M3 agent loop/judge/race | ✅ |
 | M4 observer dashboard · M5 multi-device betting · M7 record & replay | ✅ |
 | M6 announcer (predefined catalog + **generated ElevenLabs voices**) | ✅ |
-| **M3b — wire real agent models** (Gemini / DeepSeek / Haiku) | ⬜ needs API keys + adapters |
+| **M3b — wire real agent models** (Gemini / OpenAI / Haiku) | ✅ adapters wired; set keys in `.env` |
 
 The full interactive, narrated, bulletproof demo runs today on mock agents. The
 only remaining work is swapping the mock agent providers for the real models.

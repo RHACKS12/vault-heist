@@ -6,10 +6,10 @@
 // key and plays the matching cached clip.
 //
 // Keep keys stable: the generated audio filenames and the manifest are keyed by
-// them. To add variety later, add more entries (e.g. `won:deepseek:1`) and have
+// them. To add variety later, add more entries (e.g. `won:openai:1`) and have
 // lines.js pick among them — still fully pre-generated.
 
-const NAMES = { gemini: 'Gemini', deepseek: 'DeepSeek', haiku: 'Haiku' };
+const NAMES = { gemini: 'Gemini', openai: 'OpenAI', haiku: 'Haiku' };
 
 /** Priority: higher jumps ahead in the playback queue. */
 export const PRIORITY = { WIN: 3, SUBMIT: 2, PHASE: 2, PROGRESS: 1 };
@@ -34,7 +34,7 @@ export const CATALOG = Object.freeze([
   { key: 'no_crack', agent: null, priority: PRIORITY.PHASE, text: "Time's up — the vault holds!" },
   // per-agent milestones
   ...perAgent('gemini'),
-  ...perAgent('deepseek'),
+  ...perAgent('openai'),
   ...perAgent('haiku'),
 ]);
 

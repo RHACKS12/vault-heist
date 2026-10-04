@@ -25,8 +25,9 @@ import { DEFAULT_ROOTFS, WEB_ROOT, RECORDINGS_DIR, PORT, RACE_COST_CAP_USD } fro
 import { loadAnswerKey, getRound } from './agents/answer.js';
 import { Race } from './agents/race.js';
 import { mockSolver, mockWanderer } from './agents/providers/mock.js';
+import { CREW, buildRealCrew, configuredAgents } from './agents/crew.js';
 
-const AGENTS = ['gemini', 'deepseek', 'haiku'];
+const AGENTS = CREW.map((m) => m.agent); // ['gemini', 'openai', 'haiku']
 
 const bus = new EventBus();
 const game = new Game({ bus });
@@ -58,28 +59,39 @@ const round = getRound(answerKey); // default round: hardcoded-credentials
 
 let racing = false;
 
-/** Build the race for this round. Mock providers today; real ones in 3b. */
-function buildRace() {
+/** The scripted mock crew — keyless and deterministic, so the demo + replay
+ *  path always produces a clean, exciting race. */
+function buildMockRace() {
   return new Race({
     bus, game, sandbox, round,
     costCapUsd: RACE_COST_CAP_USD,
     agents: [
       { agent: 'gemini', strategy: 'grep', provider: mockWanderer({ steps: 4 }) },
-      { agent: 'deepseek', strategy: 'walk', provider: mockSolver({ file: round.file, finding: round.answer_summary }) },
+      { agent: 'openai', strategy: 'walk', provider: mockSolver({ file: round.file, finding: round.answer_summary }) },
       { agent: 'haiku', strategy: 'binary', provider: mockWanderer({ steps: 5 }) },
     ],
   });
 }
 
-/** RACING -> run the crew -> settle the pot on the winner. */
-async function startRaceAndSettle() {
+/** The real crew: each agent with an API key runs its real model; any agent
+ *  without a key falls back to a mock wanderer so the roster stays complete and
+ *  the race still runs. The shared $2 cost cap meters real spend. */
+function buildRealRace() {
+  const real = new Map(buildRealCrew().map((m) => [m.agent, m]));
+  const agents = CREW.map((m) =>
+    real.get(m.agent) ?? { agent: m.agent, strategy: m.strategy, provider: mockWanderer({ steps: 5 }) });
+  return new Race({ bus, game, sandbox, round, costCapUsd: RACE_COST_CAP_USD, agents });
+}
+
+/** RACING -> run the crew (given its builder) -> settle the pot on the winner. */
+async function startRaceAndSettle(buildRace) {
   if (racing) throw httpError('a race is already in progress', 409);
   racing = true;
   try {
     game.startRace();
-    const { winner } = await buildRace().run();
+    const { winner, cost } = await buildRace().run();
     betting.settle(winner);
-    return { winner };
+    return { winner, cost };
   } finally {
     racing = false;
   }
@@ -101,13 +113,13 @@ async function runDemoRace() {
   if (game.phase === 'SETTLED') { game.reset(); betting.reset(game.round); }
   if (game.phase !== 'LOBBY') throw httpError(`cannot start from phase ${game.phase}`, 409);
   game.openBetting(); betting.openRound();
-  for (const [name, agent, amount] of [['Ava', 'deepseek', 120], ['Ben', 'gemini', 80], ['Cy', 'haiku', 100]]) {
+  for (const [name, agent, amount] of [['Ava', 'openai', 120], ['Ben', 'gemini', 80], ['Cy', 'haiku', 100]]) {
     const { playerId } = betting.join(name);
     betting.placeBet(playerId, agent, amount);
   }
   game.lockBets({ pot: betting.pot(), odds: betting.odds() });
   betting.lock();
-  return startRaceAndSettle();
+  return startRaceAndSettle(buildMockRace);
 }
 
 const routes = {
@@ -133,7 +145,7 @@ const routes = {
     requirePhase('BETTING_OPEN');
     game.lockBets({ pot: betting.pot(), odds: betting.odds() });
     betting.lock();
-    return startRaceAndSettle();
+    return startRaceAndSettle(buildRealRace);
   },
   'POST /api/host/reset': async (body) => {
     requireHost(body);
@@ -170,6 +182,10 @@ const boundPort = await server.listen();
 console.log(`[vault-heist] dashboard: http://localhost:${boundPort}/`);
 console.log(`[vault-heist] player:    http://localhost:${boundPort}/play.html`);
 console.log(`[vault-heist] rootfs:    ${sandbox.root}`);
+const live = configuredAgents();
+console.log(live.length
+  ? `[vault-heist] live models: ${live.join(', ')} (others fall back to mock); host race uses real providers`
+  : '[vault-heist] no API keys set — host race runs on mock providers. Add keys to .env for live models.');
 
 bus.subscribe((e) => console.log(`  event #${e.seq} ${e.source}/${e.type}`, JSON.stringify(e.payload)));
 

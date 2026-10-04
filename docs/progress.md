@@ -5,6 +5,38 @@ See `DESIGN.md` for the overall plan and `CONTRIBUTING.md` for the workflow.
 
 ---
 
+## 2026-10-04 — Milestone 3b: real provider adapters + OpenAI swaps in for DeepSeek
+
+**Shipped** (feature branch `milestone-3b-real-providers` → merged to `main`):
+
+- **Real SDK adapters** for all three crew members — each `provider.step()` is a
+  single API call that translates the runner's normalized history + tool schemas
+  into the SDK's shape and back to `{ thought, toolCalls, usage, refused? }`:
+  - `providers/openai-compatible.js` — shared Chat Completions core.
+  - `providers/openai.js` (`gpt-4o-mini`), `providers/gemini.js`
+    (`@google/genai`, `gemini-2.5-flash`), `providers/haiku.js`
+    (`@anthropic-ai/sdk`, `claude-haiku-4-5`, with tool-result coalescing).
+  - Every adapter reports token `usage`, so the **$2 per-race cost cap** meters
+    real spend. Factories take an injectable `client` → unit-tested with fakes,
+    no network or keys (`test/providers.test.js`, `test/crew.test.js`).
+- **OpenAI replaced DeepSeek** (couldn't make a DeepSeek account; `gpt-4o-mini`
+  is also cheaper — ~$0.05–0.07/race). Full rename of the agent id
+  `deepseek`→`openai` across the server, web, announcer catalog + clips, the
+  betting roster, tests, and the committed `demo-clean.jsonl` (regenerated,
+  winner `openai`). The `openai-compatible` core still supports DeepSeek via a
+  baseURL if a key ever appears.
+- **Live vs. mock wiring.** Host lock (`/api/host/lock`) now runs the *real* crew:
+  each agent with a key set runs its model; agents without a key fall back to a
+  mock wanderer so the roster stays complete. The "Run demo race" button and
+  replays stay fully mock and keyless (bulletproof demo unchanged). Startup logs
+  which agents are live. Deleted the `NotWiredError` stubs.
+- `.env.example` / README / server README / DESIGN updated; `OPENAI_API_KEY`
+  replaces `DEEPSEEK_API_KEY`.
+
+**Total tests: 85 green** (73 server + 12 web).
+
+---
+
 ## 2026-10-04 — Announcer voices live + full documentation
 
 - **ElevenLabs voices generated and committed** — all 17 catalog lines were

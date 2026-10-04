@@ -11,7 +11,7 @@ import { loadAnswerKey, getRound } from '../src/agents/answer.js';
 import { mockSolver, mockWanderer } from '../src/agents/providers/mock.js';
 import { REPO_ROOT, RECORDINGS_DIR, DEFAULT_ROOTFS } from '../src/config.js';
 
-const AGENTS = ['gemini', 'deepseek', 'haiku'];
+const AGENTS = ['gemini', 'openai', 'haiku'];
 const bus = new EventBus();
 const game = new Game({ bus });
 const sandbox = new Sandbox(DEFAULT_ROOTFS);
@@ -24,7 +24,7 @@ rec.start('demo-clean');
 
 // a full round: lobby -> bets -> lock -> race -> settle
 game.openBetting(); betting.openRound();
-for (const [name, agent, amount] of [['Ava', 'deepseek', 150], ['Ben', 'gemini', 80], ['Cy', 'haiku', 120]]) {
+for (const [name, agent, amount] of [['Ava', 'openai', 150], ['Ben', 'gemini', 80], ['Cy', 'haiku', 120]]) {
   const { playerId } = betting.join(name);
   betting.placeBet(playerId, agent, amount);
 }
@@ -35,7 +35,7 @@ const race = new Race({
   bus, game, sandbox, round,
   agents: [
     { agent: 'gemini', strategy: 'grep', provider: mockWanderer({ steps: 4 }) },
-    { agent: 'deepseek', strategy: 'walk', provider: mockSolver({ file: round.file, finding: round.answer_summary }) },
+    { agent: 'openai', strategy: 'walk', provider: mockSolver({ file: round.file, finding: round.answer_summary }) },
     { agent: 'haiku', strategy: 'binary', provider: mockWanderer({ steps: 5 }) },
   ],
 });

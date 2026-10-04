@@ -81,21 +81,26 @@ The race pipeline, built mock-first so it runs with no API keys:
 | `agents/prompts.js` | System prompt (authorized, identification-only) + per-strategy task prompt. |
 | `agents/crew.js` | The 3-member roster (family, strategy, model id, env var). |
 | `agents/providers/mock.js` | Deterministic mock providers (solver / wanderer / refuser) for offline tests + `npm run race`. |
-| `agents/providers/{gemini,deepseek,haiku}.js` | Real provider adapters — **stubs** until Milestone 3b (they throw `NotWiredError`). |
+| `agents/providers/{gemini,openai,haiku}.js` | Real provider adapters (Gemini / OpenAI / Anthropic SDKs). `openai-compatible.js` is the shared Chat Completions core. |
+| `agents/pricing.js` · `agents/cost.js` | Per-model pricing + the shared per-race cost cap ($2 default, `RACE_COST_CAP_USD`). |
 
 ### Provider interface
 
 A provider is any object with `async step({ messages, tools }) -> step`, where a
-step is `{ thought?, toolCalls?:[{id,name,args}], refused?:{reason} }`. The runner
-owns a normalized message history (`system`/`user`/`assistant`/`tool`) that each
-real adapter translates into its SDK's format. Swapping a mock for a real model
-is a one-line change in the crew.
+step is `{ thought?, toolCalls?:[{id,name,args}], refused?:{reason}, usage?:{inputTokens,outputTokens} }`.
+The runner owns a normalized message history (`system`/`user`/`assistant`/`tool`)
+that each real adapter translates into its SDK's format. Each factory takes an
+injectable `client`, so the adapters are unit-tested without network or keys
+(`test/providers.test.js`).
 
-### Wiring a real provider (Milestone 3b)
+### Running real models (Milestone 3b — done)
 
-1. `npm i @google/genai openai @anthropic-ai/sdk` (as needed).
-2. Set the keys in `.env` (`GEMINI_API_KEY`, `DEEPSEEK_API_KEY`, `ANTHROPIC_API_KEY`).
-3. Implement `step()` in each `agents/providers/*.js` per the mapping documented in its header.
+1. SDKs are already installed (`@google/genai`, `openai`, `@anthropic-ai/sdk`).
+2. Set the keys in `.env` (`GEMINI_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`).
+3. Lock betting as host (`POST /api/host/lock`) to run the real crew; each agent
+   with a key runs its model (`gpt-4o-mini`, `gemini-2.5-flash`, `claude-haiku-4-5`),
+   others fall back to a mock. Every step's token usage is billed against the
+   shared `$2` cost cap, which stops the race if spend crosses it.
 
 ## Event shape
 

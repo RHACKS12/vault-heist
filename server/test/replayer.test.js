@@ -7,8 +7,8 @@ import { createEvent, SOURCES, EVENT_TYPES, PHASES } from '../src/events.js';
 
 const sampleEvents = () => ([
   createEvent({ source: SOURCES.GAME, type: EVENT_TYPES.PHASE_CHANGE, payload: { to: 'RACING' } }),
-  createEvent({ source: SOURCES.AGENT, agent: 'deepseek', type: EVENT_TYPES.OPENED_FILE }),
-  createEvent({ source: SOURCES.AGENT, agent: 'deepseek', type: EVENT_TYPES.WON }),
+  createEvent({ source: SOURCES.AGENT, agent: 'openai', type: EVENT_TYPES.OPENED_FILE }),
+  createEvent({ source: SOURCES.AGENT, agent: 'openai', type: EVENT_TYPES.WON }),
 ]);
 
 test('replay re-emits events in order (fast, no reset)', async () => {

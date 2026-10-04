@@ -2,7 +2,7 @@
 // the Sandbox; `submit` is the win condition (name the vulnerability). Provider
 // adapters translate these definitions into their own SDK's tool format.
 //
-// Schemas are JSON Schema (the shape Gemini, DeepSeek/OpenAI, and Anthropic all
+// Schemas are JSON Schema (the shape Gemini, OpenAI/OpenAI, and Anthropic all
 // accept for function/tool definitions).
 
 export const TOOLS = Object.freeze({

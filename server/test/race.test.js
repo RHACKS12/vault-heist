@@ -28,14 +28,14 @@ test('the solver beats the wanderers and the game settles', async () => {
     bus, game, sandbox, round,
     agents: [
       { agent: 'gemini', strategy: 'grep', provider: mockWanderer({ steps: 3 }) },
-      { agent: 'deepseek', strategy: 'walk', provider: mockSolver({ file: round.file, finding: round.answer_summary }) },
+      { agent: 'openai', strategy: 'walk', provider: mockSolver({ file: round.file, finding: round.answer_summary }) },
       { agent: 'haiku', strategy: 'binary', provider: mockWanderer({ steps: 3 }) },
     ],
   });
   const result = await race.run();
 
-  assert.equal(result.winner, 'deepseek');
-  assert.ok(events.some((e) => e.type === EVENT_TYPES.WON && e.agent === 'deepseek'));
+  assert.equal(result.winner, 'openai');
+  assert.ok(events.some((e) => e.type === EVENT_TYPES.WON && e.agent === 'openai'));
   assert.equal(game.phase, PHASES.SETTLED);
 });
 
@@ -45,11 +45,11 @@ test('a refuser does not win; the game still settles', async () => {
     bus, game, sandbox, round,
     agents: [
       { agent: 'gemini', strategy: 'grep', provider: mockRefuser() },
-      { agent: 'deepseek', strategy: 'walk', provider: mockSolver({ file: round.file, finding: round.answer_summary }) },
+      { agent: 'openai', strategy: 'walk', provider: mockSolver({ file: round.file, finding: round.answer_summary }) },
     ],
   });
   const result = await race.run();
-  assert.equal(result.winner, 'deepseek');
+  assert.equal(result.winner, 'openai');
   assert.equal(game.phase, PHASES.SETTLED);
 });
 
@@ -73,11 +73,11 @@ test('only one winner even if two agents submit correctly', async () => {
     bus, game, sandbox, round,
     agents: [
       { agent: 'gemini', strategy: 'grep', provider: mockSolver({ file: round.file, finding: round.answer_summary }) },
-      { agent: 'deepseek', strategy: 'walk', provider: mockSolver({ file: round.file, finding: round.answer_summary }) },
+      { agent: 'openai', strategy: 'walk', provider: mockSolver({ file: round.file, finding: round.answer_summary }) },
     ],
   });
   const result = await race.run();
-  assert.ok(['gemini', 'deepseek'].includes(result.winner));
+  assert.ok(['gemini', 'openai'].includes(result.winner));
   const wins = events.filter((e) => e.type === EVENT_TYPES.WON);
   assert.equal(wins.length, 1, 'exactly one WON event');
 });
@@ -128,7 +128,7 @@ test('mock providers report no usage and never trip the cap', async () => {
     bus, game, sandbox, round, costCapUsd: 2,
     agents: [
       { agent: 'gemini', strategy: 'grep', provider: mockWanderer({ steps: 3 }) },
-      { agent: 'deepseek', strategy: 'walk', provider: mockSolver({ file: round.file, finding: round.answer_summary }) },
+      { agent: 'openai', strategy: 'walk', provider: mockSolver({ file: round.file, finding: round.answer_summary }) },
     ],
   });
   const result = await race.run();

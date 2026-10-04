@@ -1,38 +1,37 @@
-{"seq":1,"round":1,"ts":1791072245443,"source":"game","type":"phase_change","agent":null,"payload":{"from":"LOBBY","to":"BETTING_OPEN"}}
-{"seq":2,"round":1,"ts":1791072245443,"source":"betting","type":"odds_update","agent":null,"payload":{"open":true,"pot":0,"odds":{"gemini":null,"deepseek":null,"haiku":null},"totals":{"gemini":0,"deepseek":0,"haiku":0},"counts":{"gemini":0,"deepseek":0,"haiku":0},"players":0}}
-{"seq":3,"round":1,"ts":1791072245444,"source":"betting","type":"player_joined","agent":null,"payload":{"playerId":"c9ce77c2-143e-4446-9e47-c8cf136ca3a0","name":"Ava","players":1}}
-{"seq":4,"round":1,"ts":1791072245444,"source":"betting","type":"bet_placed","agent":null,"payload":{"playerId":"c9ce77c2-143e-4446-9e47-c8cf136ca3a0","agent":"deepseek","amount":150}}
-{"seq":5,"round":1,"ts":1791072245444,"source":"betting","type":"odds_update","agent":null,"payload":{"open":true,"pot":150,"odds":{"gemini":null,"deepseek":1,"haiku":null},"totals":{"gemini":0,"deepseek":150,"haiku":0},"counts":{"gemini":0,"deepseek":1,"haiku":0},"players":1}}
-{"seq":6,"round":1,"ts":1791072245444,"source":"betting","type":"player_joined","agent":null,"payload":{"playerId":"5f4e261c-9dd8-48e8-aae4-e9b6fec80f96","name":"Ben","players":2}}
-{"seq":7,"round":1,"ts":1791072245444,"source":"betting","type":"bet_placed","agent":null,"payload":{"playerId":"5f4e261c-9dd8-48e8-aae4-e9b6fec80f96","agent":"gemini","amount":80}}
-{"seq":8,"round":1,"ts":1791072245444,"source":"betting","type":"odds_update","agent":null,"payload":{"open":true,"pot":230,"odds":{"gemini":2.88,"deepseek":1.53,"haiku":null},"totals":{"gemini":80,"deepseek":150,"haiku":0},"counts":{"gemini":1,"deepseek":1,"haiku":0},"players":2}}
-{"seq":9,"round":1,"ts":1791072245444,"source":"betting","type":"player_joined","agent":null,"payload":{"playerId":"7ef831c6-6a31-48a9-9b09-cdbe53d5a165","name":"Cy","players":3}}
-{"seq":10,"round":1,"ts":1791072245444,"source":"betting","type":"bet_placed","agent":null,"payload":{"playerId":"7ef831c6-6a31-48a9-9b09-cdbe53d5a165","agent":"haiku","amount":120}}
-{"seq":11,"round":1,"ts":1791072245444,"source":"betting","type":"odds_update","agent":null,"payload":{"open":true,"pot":350,"odds":{"gemini":4.38,"deepseek":2.33,"haiku":2.92},"totals":{"gemini":80,"deepseek":150,"haiku":120},"counts":{"gemini":1,"deepseek":1,"haiku":1},"players":3}}
-{"seq":12,"round":1,"ts":1791072245444,"source":"game","type":"phase_change","agent":null,"payload":{"from":"BETTING_OPEN","to":"BETS_LOCKED","pot":350,"odds":{"gemini":4.38,"deepseek":2.33,"haiku":2.92}}}
-{"seq":13,"round":1,"ts":1791072245444,"source":"betting","type":"odds_update","agent":null,"payload":{"open":false,"pot":350,"odds":{"gemini":4.38,"deepseek":2.33,"haiku":2.92},"totals":{"gemini":80,"deepseek":150,"haiku":120},"counts":{"gemini":1,"deepseek":1,"haiku":1},"players":3}}
-{"seq":14,"round":1,"ts":1791072245444,"source":"game","type":"phase_change","agent":null,"payload":{"from":"BETS_LOCKED","to":"RACING"}}
-{"seq":15,"round":1,"ts":1791072245445,"source":"agent","type":"reasoning_token","agent":"gemini","payload":{"text":"Still searching... (1)"}}
-{"seq":16,"round":1,"ts":1791072245445,"source":"agent","type":"exploring","agent":"gemini","payload":{}}
-{"seq":17,"round":1,"ts":1791072245445,"source":"agent","type":"reasoning_token","agent":"deepseek","payload":{"text":"(walk) Starting at the root of the firmware."}}
-{"seq":18,"round":1,"ts":1791072245445,"source":"agent","type":"exploring","agent":"deepseek","payload":{}}
-{"seq":19,"round":1,"ts":1791072245446,"source":"agent","type":"reasoning_token","agent":"haiku","payload":{"text":"Still searching... (1)"}}
-{"seq":20,"round":1,"ts":1791072245446,"source":"agent","type":"exploring","agent":"haiku","payload":{}}
-{"seq":21,"round":1,"ts":1791072245453,"source":"agent","type":"reasoning_token","agent":"haiku","payload":{"text":"Still searching... (2)"}}
-{"seq":22,"round":1,"ts":1791072245453,"source":"agent","type":"reasoning_token","agent":"gemini","payload":{"text":"Still searching... (2)"}}
-{"seq":23,"round":1,"ts":1791072245454,"source":"agent","type":"reasoning_token","agent":"deepseek","payload":{"text":"Looking inside /etc."}}
-{"seq":24,"round":1,"ts":1791072245454,"source":"agent","type":"reasoning_token","agent":"haiku","payload":{"text":"Still searching... (3)"}}
-{"seq":25,"round":1,"ts":1791072245454,"source":"agent","type":"reasoning_token","agent":"gemini","payload":{"text":"Still searching... (3)"}}
-{"seq":26,"round":1,"ts":1791072245455,"source":"agent","type":"reasoning_token","agent":"haiku","payload":{"text":"Still searching... (4)"}}
-{"seq":27,"round":1,"ts":1791072245455,"source":"agent","type":"reasoning_token","agent":"gemini","payload":{"text":"Still searching... (4)"}}
-{"seq":28,"round":1,"ts":1791072245455,"source":"agent","type":"found_dir","agent":"deepseek","payload":{"dir":"/etc"}}
-{"seq":29,"round":1,"ts":1791072245455,"source":"agent","type":"reasoning_token","agent":"deepseek","payload":{"text":"Reading /etc/shadow."}}
-{"seq":30,"round":1,"ts":1791072245456,"source":"agent","type":"reasoning_token","agent":"haiku","payload":{"text":"Still searching... (5)"}}
-{"seq":31,"round":1,"ts":1791072245456,"source":"agent","type":"reasoning_token","agent":"gemini","payload":{"text":"Nothing more to do."}}
-{"seq":32,"round":1,"ts":1791072245456,"source":"agent","type":"reasoning_token","agent":"haiku","payload":{"text":"Nothing more to do."}}
-{"seq":33,"round":1,"ts":1791072245456,"source":"agent","type":"opened_file","agent":"deepseek","payload":{"file":"/etc/shadow"}}
-{"seq":34,"round":1,"ts":1791072245456,"source":"agent","type":"reasoning_token","agent":"deepseek","payload":{"text":"I can identify the vulnerability now."}}
-{"seq":35,"round":1,"ts":1791072245456,"source":"agent","type":"submitted","agent":"deepseek","payload":{"finding":"Firmware ships with hardcoded login credentials. /etc/shadow contains MD5 ($1$) password hashes baked into the image, including user 'iotgoatuser' (password '7ujMko0vizxv') and 'root'."}}
-{"seq":36,"round":1,"ts":1791072245456,"source":"agent","type":"won","agent":"deepseek","payload":{"matchedOn":[{"type":"file","value":"/etc/shadow"},{"type":"file","value":"etc/shadow"},{"type":"string","value":"iotgoatuser"},{"type":"string","value":"7ujMko0vizxv"},{"type":"string","value":"$1$"}],"finding":"Firmware ships with hardcoded login credentials. /etc/shadow contains MD5 ($1$) password hashes baked into the image, including user 'iotgoatuser' (password '7ujMko0vizxv') and 'root'."}}
-{"seq":37,"round":1,"ts":1791072245456,"source":"game","type":"phase_change","agent":null,"payload":{"from":"RACING","to":"SETTLED","winner":"deepseek","matchedOn":[{"type":"file","value":"/etc/shadow"},{"type":"file","value":"etc/shadow"},{"type":"string","value":"iotgoatuser"},{"type":"string","value":"7ujMko0vizxv"},{"type":"string","value":"$1$"}]}}
-{"seq":38,"round":1,"ts":1791072245457,"source":"betting","type":"settled","agent":null,"payload":{"winner":"deepseek","pot":350,"totalOnWinner":150,"refunded":false,"payouts":[{"playerId":"c9ce77c2-143e-4446-9e47-c8cf136ca3a0","name":"Ava","agent":"deepseek","bet":150,"payout":350,"won":true},{"playerId":"5f4e261c-9dd8-48e8-aae4-e9b6fec80f96","name":"Ben","agent":"gemini","bet":80,"payout":0,"won":false},{"playerId":"7ef831c6-6a31-48a9-9b09-cdbe53d5a165","name":"Cy","agent":"haiku","bet":120,"payout":0,"won":false}]}}
+{"seq":1,"round":1,"ts":1791095141819,"source":"game","type":"phase_change","agent":null,"payload":{"from":"LOBBY","to":"BETTING_OPEN"}}
+{"seq":2,"round":1,"ts":1791095141820,"source":"betting","type":"odds_update","agent":null,"payload":{"open":true,"pot":0,"odds":{"gemini":null,"openai":null,"haiku":null},"totals":{"gemini":0,"openai":0,"haiku":0},"counts":{"gemini":0,"openai":0,"haiku":0},"players":0}}
+{"seq":3,"round":1,"ts":1791095141821,"source":"betting","type":"player_joined","agent":null,"payload":{"playerId":"aa291262-6225-4bca-876d-a8e1ddaed499","name":"Ava","players":1}}
+{"seq":4,"round":1,"ts":1791095141821,"source":"betting","type":"bet_placed","agent":null,"payload":{"playerId":"aa291262-6225-4bca-876d-a8e1ddaed499","agent":"openai","amount":150}}
+{"seq":5,"round":1,"ts":1791095141821,"source":"betting","type":"odds_update","agent":null,"payload":{"open":true,"pot":150,"odds":{"gemini":null,"openai":1,"haiku":null},"totals":{"gemini":0,"openai":150,"haiku":0},"counts":{"gemini":0,"openai":1,"haiku":0},"players":1}}
+{"seq":6,"round":1,"ts":1791095141822,"source":"betting","type":"player_joined","agent":null,"payload":{"playerId":"9c7a4a46-7280-4593-8c5c-946311c1da06","name":"Ben","players":2}}
+{"seq":7,"round":1,"ts":1791095141822,"source":"betting","type":"bet_placed","agent":null,"payload":{"playerId":"9c7a4a46-7280-4593-8c5c-946311c1da06","agent":"gemini","amount":80}}
+{"seq":8,"round":1,"ts":1791095141822,"source":"betting","type":"odds_update","agent":null,"payload":{"open":true,"pot":230,"odds":{"gemini":2.88,"openai":1.53,"haiku":null},"totals":{"gemini":80,"openai":150,"haiku":0},"counts":{"gemini":1,"openai":1,"haiku":0},"players":2}}
+{"seq":9,"round":1,"ts":1791095141822,"source":"betting","type":"player_joined","agent":null,"payload":{"playerId":"989ea465-a3e7-4a2d-bc22-0c7cfa73f3ee","name":"Cy","players":3}}
+{"seq":10,"round":1,"ts":1791095141822,"source":"betting","type":"bet_placed","agent":null,"payload":{"playerId":"989ea465-a3e7-4a2d-bc22-0c7cfa73f3ee","agent":"haiku","amount":120}}
+{"seq":11,"round":1,"ts":1791095141822,"source":"betting","type":"odds_update","agent":null,"payload":{"open":true,"pot":350,"odds":{"gemini":4.38,"openai":2.33,"haiku":2.92},"totals":{"gemini":80,"openai":150,"haiku":120},"counts":{"gemini":1,"openai":1,"haiku":1},"players":3}}
+{"seq":12,"round":1,"ts":1791095141822,"source":"game","type":"phase_change","agent":null,"payload":{"from":"BETTING_OPEN","to":"BETS_LOCKED","pot":350,"odds":{"gemini":4.38,"openai":2.33,"haiku":2.92}}}
+{"seq":13,"round":1,"ts":1791095141823,"source":"betting","type":"odds_update","agent":null,"payload":{"open":false,"pot":350,"odds":{"gemini":4.38,"openai":2.33,"haiku":2.92},"totals":{"gemini":80,"openai":150,"haiku":120},"counts":{"gemini":1,"openai":1,"haiku":1},"players":3}}
+{"seq":14,"round":1,"ts":1791095141823,"source":"game","type":"phase_change","agent":null,"payload":{"from":"BETS_LOCKED","to":"RACING"}}
+{"seq":15,"round":1,"ts":1791095141826,"source":"agent","type":"reasoning_token","agent":"gemini","payload":{"text":"Still searching... (1)"}}
+{"seq":16,"round":1,"ts":1791095141827,"source":"agent","type":"exploring","agent":"gemini","payload":{}}
+{"seq":17,"round":1,"ts":1791095141828,"source":"agent","type":"reasoning_token","agent":"openai","payload":{"text":"(walk) Starting at the root of the firmware."}}
+{"seq":18,"round":1,"ts":1791095141828,"source":"agent","type":"exploring","agent":"openai","payload":{}}
+{"seq":19,"round":1,"ts":1791095141829,"source":"agent","type":"reasoning_token","agent":"haiku","payload":{"text":"Still searching... (1)"}}
+{"seq":20,"round":1,"ts":1791095141829,"source":"agent","type":"exploring","agent":"haiku","payload":{}}
+{"seq":21,"round":1,"ts":1791095141869,"source":"agent","type":"reasoning_token","agent":"gemini","payload":{"text":"Still searching... (2)"}}
+{"seq":22,"round":1,"ts":1791095141869,"source":"agent","type":"reasoning_token","agent":"openai","payload":{"text":"Looking inside /etc."}}
+{"seq":23,"round":1,"ts":1791095141870,"source":"agent","type":"reasoning_token","agent":"haiku","payload":{"text":"Still searching... (2)"}}
+{"seq":24,"round":1,"ts":1791095141871,"source":"agent","type":"reasoning_token","agent":"gemini","payload":{"text":"Still searching... (3)"}}
+{"seq":25,"round":1,"ts":1791095141871,"source":"agent","type":"reasoning_token","agent":"haiku","payload":{"text":"Still searching... (3)"}}
+{"seq":26,"round":1,"ts":1791095141872,"source":"agent","type":"reasoning_token","agent":"gemini","payload":{"text":"Still searching... (4)"}}
+{"seq":27,"round":1,"ts":1791095141872,"source":"agent","type":"reasoning_token","agent":"haiku","payload":{"text":"Still searching... (4)"}}
+{"seq":28,"round":1,"ts":1791095141873,"source":"agent","type":"found_dir","agent":"openai","payload":{"dir":"/etc"}}
+{"seq":29,"round":1,"ts":1791095141873,"source":"agent","type":"reasoning_token","agent":"openai","payload":{"text":"Reading /etc/shadow."}}
+{"seq":30,"round":1,"ts":1791095141874,"source":"agent","type":"reasoning_token","agent":"gemini","payload":{"text":"Nothing more to do."}}
+{"seq":31,"round":1,"ts":1791095141875,"source":"agent","type":"reasoning_token","agent":"haiku","payload":{"text":"Still searching... (5)"}}
+{"seq":32,"round":1,"ts":1791095141876,"source":"agent","type":"opened_file","agent":"openai","payload":{"file":"/etc/shadow"}}
+{"seq":33,"round":1,"ts":1791095141876,"source":"agent","type":"reasoning_token","agent":"openai","payload":{"text":"I can identify the vulnerability now."}}
+{"seq":34,"round":1,"ts":1791095141877,"source":"agent","type":"submitted","agent":"openai","payload":{"finding":"Firmware ships with hardcoded login credentials. /etc/shadow contains MD5 ($1$) password hashes baked into the image, including user 'iotgoatuser' (password '7ujMko0vizxv') and 'root'."}}
+{"seq":35,"round":1,"ts":1791095141877,"source":"agent","type":"won","agent":"openai","payload":{"matchedOn":[{"type":"file","value":"/etc/shadow"},{"type":"file","value":"etc/shadow"},{"type":"string","value":"iotgoatuser"},{"type":"string","value":"7ujMko0vizxv"},{"type":"string","value":"$1$"}],"finding":"Firmware ships with hardcoded login credentials. /etc/shadow contains MD5 ($1$) password hashes baked into the image, including user 'iotgoatuser' (password '7ujMko0vizxv') and 'root'."}}
+{"seq":36,"round":1,"ts":1791095141877,"source":"game","type":"phase_change","agent":null,"payload":{"from":"RACING","to":"SETTLED","winner":"openai","matchedOn":[{"type":"file","value":"/etc/shadow"},{"type":"file","value":"etc/shadow"},{"type":"string","value":"iotgoatuser"},{"type":"string","value":"7ujMko0vizxv"},{"type":"string","value":"$1$"}]}}
+{"seq":37,"round":1,"ts":1791095141878,"source":"betting","type":"settled","agent":null,"payload":{"winner":"openai","pot":350,"totalOnWinner":150,"refunded":false,"payouts":[{"playerId":"aa291262-6225-4bca-876d-a8e1ddaed499","name":"Ava","agent":"openai","bet":150,"payout":350,"won":true},{"playerId":"9c7a4a46-7280-4593-8c5c-946311c1da06","name":"Ben","agent":"gemini","bet":80,"payout":0,"won":false},{"playerId":"989ea465-a3e7-4a2d-bc22-0c7cfa73f3ee","name":"Cy","agent":"haiku","bet":120,"payout":0,"won":false}]}}
