@@ -2,71 +2,88 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { EventBus } from '../src/bus.js';
 import { Announcer } from '../src/announcer/announcer.js';
-import { lineFor, PRIORITY } from '../src/announcer/lines.js';
-import { createMockTTS } from '../src/announcer/providers/mock-tts.js';
+import { keyFor, lineFor, PRIORITY } from '../src/announcer/lines.js';
+import { CATALOG, entryFor } from '../src/announcer/catalog.js';
 import { createEvent, SOURCES, EVENT_TYPES, PHASES } from '../src/events.js';
 
-// --- lines (pure) ---
+// --- catalog ---
 
-test('only milestone/phase events get a line; tool noise is silent', () => {
-  assert.equal(lineFor({ type: EVENT_TYPES.EXPLORING, agent: 'gemini' }), null);
-  assert.equal(lineFor({ type: EVENT_TYPES.REASONING_TOKEN, agent: 'gemini', payload: { text: 'x' } }), null);
-  assert.ok(lineFor({ type: EVENT_TYPES.FOUND_DIR, agent: 'gemini', payload: { dir: '/etc' } }));
+test('every catalog key is unique and every entry has text + priority', () => {
+  const keys = new Set();
+  for (const e of CATALOG) {
+    assert.ok(!keys.has(e.key), `duplicate key ${e.key}`);
+    keys.add(e.key);
+    assert.ok(e.text && typeof e.text === 'string');
+    assert.ok(typeof e.priority === 'number');
+  }
+  assert.equal(CATALOG.length, 15); // 3 phase + 4 milestones x 3 agents
 });
 
-test('fixed phase calls and the winner line have the right text/priority', () => {
-  assert.match(lineFor({ type: EVENT_TYPES.PHASE_CHANGE, payload: { to: PHASES.RACING } }).text, /off/i);
+// --- event -> key mapping (pure) ---
+
+test('silent events map to no key', () => {
+  assert.equal(keyFor({ type: EVENT_TYPES.EXPLORING, agent: 'gemini' }), null);
+  assert.equal(keyFor({ type: EVENT_TYPES.REASONING_TOKEN, agent: 'gemini' }), null);
+});
+
+test('milestones and phases map to catalog keys', () => {
+  assert.equal(keyFor({ type: EVENT_TYPES.PHASE_CHANGE, payload: { to: PHASES.RACING } }), 'race_start');
+  assert.equal(keyFor({ type: EVENT_TYPES.PHASE_CHANGE, payload: { to: PHASES.BETTING_OPEN } }), 'lobby');
+  assert.equal(keyFor({ type: EVENT_TYPES.FOUND_DIR, agent: 'gemini', payload: { dir: '/etc' } }), 'found:gemini');
+  assert.equal(keyFor({ type: EVENT_TYPES.WON, agent: 'deepseek' }), 'won:deepseek');
+  // settled only speaks when nobody won
+  assert.equal(keyFor({ type: EVENT_TYPES.PHASE_CHANGE, payload: { to: PHASES.SETTLED, winner: 'gemini' } }), null);
+  assert.equal(keyFor({ type: EVENT_TYPES.PHASE_CHANGE, payload: { to: PHASES.SETTLED, winner: null } }), 'no_crack');
+});
+
+test('lineFor returns the catalog entry; win line is high priority', () => {
   const win = lineFor({ type: EVENT_TYPES.WON, agent: 'deepseek' });
+  assert.equal(win.key, 'won:deepseek');
   assert.match(win.text, /winner/i);
   assert.match(win.text, /DeepSeek/);
   assert.equal(win.priority, PRIORITY.WIN);
-  const open = lineFor({ type: EVENT_TYPES.PHASE_CHANGE, payload: { to: PHASES.BETTING_OPEN } });
-  assert.equal(open.fixed, true);
+  assert.equal(lineFor({ type: EVENT_TYPES.EXPLORING, agent: 'gemini' }), null);
 });
 
-test('settled with no winner gets a line; with a winner the won event carries it', () => {
-  assert.ok(lineFor({ type: EVENT_TYPES.PHASE_CHANGE, payload: { to: PHASES.SETTLED, winner: null } }));
-  assert.equal(lineFor({ type: EVENT_TYPES.PHASE_CHANGE, payload: { to: PHASES.SETTLED, winner: 'gemini' } }), null);
-});
+// --- announcer pipeline ---
 
-// --- announcer (pipeline) ---
-
-function harness() {
+function harness(clips) {
   const bus = new EventBus();
   const announces = [];
   bus.subscribe((e) => { if (e.type === EVENT_TYPES.ANNOUNCE) announces.push(e); });
-  const announcer = new Announcer({ bus, tts: createMockTTS() }).start();
+  const announcer = new Announcer({ bus, clips }).start();
   return { bus, announces, announcer };
 }
+const tick = () => Promise.resolve().then(() => Promise.resolve());
 
-test('a milestone event produces one announce event with text + priority', async () => {
+test('a milestone produces one announce event with catalog text; clip null with no manifest', async () => {
   const { bus, announces } = harness();
   bus.publish(createEvent({ source: SOURCES.AGENT, agent: 'gemini', type: EVENT_TYPES.FOUND_DIR, payload: { dir: '/etc' } }));
-  await Promise.resolve(); await Promise.resolve();
+  await tick();
   assert.equal(announces.length, 1);
-  assert.equal(announces[0].source, SOURCES.ANNOUNCER);
-  assert.match(announces[0].payload.text, /Gemini/);
-  assert.equal(announces[0].payload.clip, null); // mock -> browser fallback
+  assert.equal(announces[0].payload.key, 'found:gemini');
+  assert.equal(announces[0].payload.text, entryFor('found:gemini').text);
+  assert.equal(announces[0].payload.clip, null);
+});
+
+test('a pre-generated clip is attached from the manifest', async () => {
+  const clips = new Map([['won:deepseek', '/announcer/won_deepseek.mp3']]);
+  const { bus, announces } = harness(clips);
+  bus.publish(createEvent({ source: SOURCES.AGENT, agent: 'deepseek', type: EVENT_TYPES.WON }));
+  await tick();
+  assert.equal(announces[0].payload.clip, '/announcer/won_deepseek.mp3');
 });
 
 test('the announcer never announces its own announce events (no loop)', async () => {
   const { bus, announces } = harness();
   bus.publish(createEvent({ source: SOURCES.AGENT, agent: 'haiku', type: EVENT_TYPES.WON }));
-  await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
-  assert.equal(announces.length, 1); // exactly one, not a cascade
-});
-
-test('silent events produce no announce', async () => {
-  const { bus, announces } = harness();
-  bus.publish(createEvent({ source: SOURCES.AGENT, agent: 'gemini', type: EVENT_TYPES.EXPLORING }));
-  bus.publish(createEvent({ source: SOURCES.AGENT, agent: 'gemini', type: EVENT_TYPES.REASONING_TOKEN, payload: { text: 'hmm' } }));
-  await Promise.resolve(); await Promise.resolve();
-  assert.equal(announces.length, 0);
+  await tick();
+  assert.equal(announces.length, 1);
 });
 
 test('narrates replayed milestones too (derived layer)', async () => {
   const { bus, announces } = harness();
   bus.publish({ ...createEvent({ source: SOURCES.AGENT, agent: 'deepseek', type: EVENT_TYPES.OPENED_FILE }), replay: true });
-  await Promise.resolve(); await Promise.resolve();
+  await tick();
   assert.equal(announces.length, 1);
 });

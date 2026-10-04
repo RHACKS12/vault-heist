@@ -1,20 +1,29 @@
-// Announcer: subscribe to the bus, turn milestone events into announcer lines,
-// synthesize (or cache) audio, and emit `announce` events for the dashboard.
+// Announcer: subscribe to the bus, map milestone events to predefined catalog
+// lines, and emit `announce` events for the dashboard — attaching a pre-generated
+// audio clip when one exists (zero runtime TTS cost).
 //
 // Narration is a DERIVED presentation layer: it regenerates from the event
-// stream, so it narrates replays too (the replayer re-emits the milestones and
-// the announcer voices them live). That's why recordings exclude `announce`
-// events (see recorder.js) — there is nothing to double up.
+// stream, so it narrates replays too. Recordings therefore exclude `announce`
+// events (see recorder.js) — nothing to double up.
+//
+// Clips come from a manifest (key -> url) built offline by
+// `npm run generate:announcer`. With no manifest (or a missing key), the clip is
+// null and the dashboard falls back to the browser's built-in speech, so the
+// announcer is audible even before anything is generated. An optional `tts`
+// provider can synthesize keys that aren't pre-generated (not used by default).
 import { SOURCES, EVENT_TYPES, createEvent } from '../events.js';
 import { lineFor } from './lines.js';
 
 export class Announcer {
-  /** @param {{bus, tts?:{synthesize:(text:string,opts?:object)=>Promise<?string>}}} opts */
-  constructor({ bus, tts = null }) {
+  /**
+   * @param {{bus, clips?:Map<string,string>|Record<string,string>,
+   *          tts?:{synthesize:(text:string)=>Promise<?string>}}} opts
+   */
+  constructor({ bus, clips = new Map(), tts = null }) {
     if (!bus) throw new Error('Announcer requires a bus');
     this.bus = bus;
+    this.clips = clips instanceof Map ? clips : new Map(Object.entries(clips ?? {}));
     this.tts = tts;
-    this.cache = new Map();   // fixed line text -> clip url
     this._unsub = null;
   }
 
@@ -27,11 +36,11 @@ export class Announcer {
   stop() { this._unsub?.(); this._unsub = null; }
 
   async _onEvent(event) {
-    if (event.source === SOURCES.ANNOUNCER) return;   // never announce our own lines
+    if (event.source === SOURCES.ANNOUNCER) return; // never announce our own lines
     const line = lineFor(event);
     if (!line) return;
-    let clip = null;
-    try { clip = await this._clip(line); } catch { clip = null; } // fall back to browser TTS
+    let clip = this.clips.get(line.key) ?? null;
+    if (!clip && this.tts) { try { clip = await this.tts.synthesize(line.text); } catch { clip = null; } }
     this.bus.publish(createEvent({
       round: event.round,
       source: SOURCES.ANNOUNCER,
@@ -39,14 +48,5 @@ export class Announcer {
       type: EVENT_TYPES.ANNOUNCE,
       payload: { key: line.key, text: line.text, priority: line.priority, clip },
     }));
-  }
-
-  /** Get an audio clip url for a line (cached for fixed lines), or null. */
-  async _clip(line) {
-    if (!this.tts) return null;
-    if (line.fixed && this.cache.has(line.text)) return this.cache.get(line.text);
-    const clip = await this.tts.synthesize(line.text, { fixed: line.fixed });
-    if (line.fixed && clip) this.cache.set(line.text, clip);
-    return clip;
   }
 }

@@ -79,9 +79,9 @@ npm run race         # start + run a full auto demo: bots join, bet, lock, and r
 | Milestone 4 — observer dashboard (served + mock-race demo) | ✅ done |
 | Milestone 5 — multi-device lobby + pari-mutuel betting | ✅ done |
 | Milestone 7 — record & replay (bulletproof demo path) | ✅ done |
-| Milestone 6 — announcer (event→line, priority queue, mock-tested) | ✅ done |
+| Milestone 6 — announcer (predefined catalog, priority queue) | ✅ done |
 | Milestone 3b — wire real providers (Gemini / DeepSeek / Haiku) | ⬜ **needs API keys** (see `.env.example`) |
-| Milestone 6b — ElevenLabs voices | ⬜ **needs** `ELEVENLABS_API_KEY` |
+| Milestone 6b — pre-generate ElevenLabs clips (`npm run generate:announcer`) | ⬜ **needs** `ELEVENLABS_API_KEY` |
 
 See [`docs/progress.md`](./docs/progress.md) for the detailed log.
 
