@@ -21,7 +21,7 @@ import { Recorder } from './recorder.js';
 import { Replayer, listRecordings } from './replayer.js';
 import { Announcer } from './announcer/announcer.js';
 import { createServer } from './server.js';
-import { DEFAULT_ROOTFS, WEB_ROOT, RECORDINGS_DIR, PORT } from './config.js';
+import { DEFAULT_ROOTFS, WEB_ROOT, RECORDINGS_DIR, PORT, RACE_COST_CAP_USD } from './config.js';
 import { loadAnswerKey, getRound } from './agents/answer.js';
 import { Race } from './agents/race.js';
 import { mockSolver, mockWanderer } from './agents/providers/mock.js';
@@ -62,6 +62,7 @@ let racing = false;
 function buildRace() {
   return new Race({
     bus, game, sandbox, round,
+    costCapUsd: RACE_COST_CAP_USD,
     agents: [
       { agent: 'gemini', strategy: 'grep', provider: mockWanderer({ steps: 4 }) },
       { agent: 'deepseek', strategy: 'walk', provider: mockSolver({ file: round.file, finding: round.answer_summary }) },

@@ -18,7 +18,7 @@ import { SOURCES, EVENT_TYPES, createEvent } from '../events.js';
 import { ALL_TOOLS } from './tools.js';
 
 export class AgentRunner {
-  constructor({ agent, round = 1, bus, provider, session, onSubmit, shouldStop = () => false, system, task, maxSteps = 24 }) {
+  constructor({ agent, round = 1, bus, provider, session, onSubmit, shouldStop = () => false, system, task, maxSteps = 24, costTracker = null, model = null }) {
     this.agent = agent;
     this.round = round;
     this.bus = bus;
@@ -29,6 +29,8 @@ export class AgentRunner {
     this.system = system;
     this.task = task;
     this.maxSteps = maxSteps;
+    this.costTracker = costTracker;
+    this.model = model ?? provider?.model ?? null;
   }
 
   async run() {
@@ -46,6 +48,14 @@ export class AgentRunner {
       } catch (e) {
         this._emit(EVENT_TYPES.REFUSED, { reason: `provider error: ${e.message}` });
         return { status: 'error', error: e.message };
+      }
+
+      // Charge this step's token usage against the shared race cost ceiling.
+      // A step already paid for cannot be un-billed, so we check the cap after
+      // recording and stop before spending anything more.
+      if (this.costTracker && step.usage) {
+        this.costTracker.add({ agent: this.agent, model: this.model, usage: step.usage });
+        if (this.costTracker.exceeded()) return { status: 'cost', steps: i };
       }
 
       if (step.refused) {

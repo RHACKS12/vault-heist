@@ -7,6 +7,8 @@
 //     messages keyed by tool_call_id.
 //   - Return { thought, toolCalls:[{id,name,args}] } from the assistant message's
 //     content + tool_calls (args = JSON.parse(arguments)).
+//   - Include usage:{ inputTokens, outputTokens } (from response.usage:
+//     prompt_tokens / completion_tokens) so the race cost cap can bill this step.
 //
 // Strategy for this crew member: walk the filesystem.
 import { NotWiredError } from './not-wired.js';

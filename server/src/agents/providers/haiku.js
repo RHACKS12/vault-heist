@@ -8,6 +8,8 @@
 //   - Normalized `messages` -> Anthropic messages; tool results as
 //     role:'user' content blocks {type:'tool_result', tool_use_id, content}.
 //   - Parse response content blocks: text -> thought, tool_use -> toolCalls.
+//   - Include usage:{ inputTokens, outputTokens } (from response.usage:
+//     input_tokens / output_tokens) so the race cost cap can bill this step.
 //
 // Strategy for this crew member: inspect binaries first. Optional / swappable.
 import { NotWiredError } from './not-wired.js';
