@@ -4,11 +4,17 @@ Node.js backend for Vault Heist: the event bus, the game state machine, and the
 read-only firmware sandbox. Pure ESM JavaScript, no build step.
 
 ```bash
-npm start        # http://localhost:3000  (WebSocket + /health)
+npm start        # http://localhost:3000  (dashboard + /play.html + WebSocket + /health)
 npm run demo     # start + walk one scripted phase cycle
+npm run race     # start + a full auto demo (bots bet, then race)
 npm test         # node:test suite
 PORT=4000 npm start
 ```
+
+Keys (ElevenLabs for generation, and later the agent models) are read from a
+`.env` at the repo root or `server/`, loaded automatically via `src/env.js`
+(Node ≥ 20.12). Inline env vars take precedence. The static server serves the
+dashboard, the player screen, and the announcer `.mp3` clips.
 
 ## Modules
 
