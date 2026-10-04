@@ -66,6 +66,14 @@ export function createServer({ bus, game, sandbox, betting, port, webRoot, route
     ws.on('error', unsubscribe);
   });
 
+  // Heroku's router drops connections idle for 55s (H15). Ping every 25s so
+  // quiet stretches between rounds don't sever every client's socket.
+  const heartbeat = setInterval(() => {
+    for (const ws of wss.clients) if (ws.readyState === ws.OPEN) ws.ping();
+  }, 25_000);
+  heartbeat.unref();
+  wss.on('close', () => clearInterval(heartbeat));
+
   return {
     httpServer, wss,
     listen: () => new Promise((resolve) => httpServer.listen(port, () => resolve(httpServer.address().port))),
