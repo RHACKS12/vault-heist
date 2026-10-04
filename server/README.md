@@ -98,7 +98,7 @@ injectable `client`, so the adapters are unit-tested without network or keys
 1. SDKs are already installed (`@google/genai`, `openai`, `@anthropic-ai/sdk`).
 2. Set the keys in `.env` (`GEMINI_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`).
 3. Lock betting as host (`POST /api/host/lock`) to run the real crew; each agent
-   with a key runs its model (`gpt-4o-mini`, `gemini-2.5-flash`, `claude-haiku-4-5`),
+   with a key runs its model (`gpt-4o-mini`, `gemini-3.8-flash`, `claude-haiku-4-5`),
    others fall back to a mock. Every step's token usage is billed against the
    shared `$2` cost cap, which stops the race if spend crosses it.
 

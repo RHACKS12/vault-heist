@@ -54,7 +54,7 @@ export function fromGeminiResponse(resp) {
   return { thought, toolCalls, usage };
 }
 
-export function createGeminiProvider({ apiKey = process.env.GEMINI_API_KEY, model = 'gemini-2.5-flash', client } = {}) {
+export function createGeminiProvider({ apiKey = process.env.GEMINI_API_KEY, model = 'gemini-3.8-flash', client } = {}) {
   const sdk = client ?? (apiKey ? new GoogleGenAI({ apiKey }) : null);
   return {
     name: 'gemini',

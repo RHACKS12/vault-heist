@@ -6,8 +6,8 @@
 // the table are treated as free (cost 0), so offline demos and tests never trip
 // the cap.
 export const PRICES = Object.freeze({
-  // Google Gemini
-  'gemini-2.5-flash': { inputPerM: 0.30, outputPerM: 2.50 },
+  // Google Gemini (3.8 Flash regular rate; intro rate through 2026 is ~half)
+  'gemini-3.8-flash': { inputPerM: 1.50, outputPerM: 7.50 },
   // OpenAI
   'gpt-4o-mini': { inputPerM: 0.15, outputPerM: 0.60 },
   'gpt-4.1-mini': { inputPerM: 0.40, outputPerM: 1.60 },
