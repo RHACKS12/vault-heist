@@ -17,21 +17,21 @@ export const PRIORITY = { WIN: 3, SUBMIT: 2, PHASE: 2, PROGRESS: 1 };
 function perAgent(agent) {
   const name = NAMES[agent];
   return [
-    { key: `found:${agent}`, agent, priority: PRIORITY.PROGRESS, text: `${name}'s inside — tearing through the directories!` },
-    { key: `opened:${agent}`, agent, priority: PRIORITY.PROGRESS, text: `${name} just pried open a juicy-looking file!` },
-    { key: `submitted:${agent}`, agent, priority: PRIORITY.SUBMIT, text: `${name}'s making the call — could this be the one?!` },
-    { key: `won:${agent}`, agent, priority: PRIORITY.WIN, text: `We have a winner! ${name} cracked the vault wide open!` },
+    { key: `found:${agent}`, agent, priority: PRIORITY.PROGRESS, text: `${name}'s inside!` },
+    { key: `opened:${agent}`, agent, priority: PRIORITY.PROGRESS, text: `${name} cracked open a file!` },
+    { key: `submitted:${agent}`, agent, priority: PRIORITY.SUBMIT, text: `${name}'s making the call!` },
+    { key: `won:${agent}`, agent, priority: PRIORITY.WIN, text: `${name} cracked the vault!` },
   ];
 }
 
 /** Every announcer line, enumerable and pre-generatable. */
 export const CATALOG = Object.freeze([
   // phase / game calls (fixed, no agent)
-  { key: 'new_round', agent: null, priority: PRIORITY.PHASE, text: 'A brand new round begins!' },
-  { key: 'bets_open', agent: null, priority: PRIORITY.PHASE, text: 'Bets are now open! Pick your safecracker and lay down your chips.' },
-  { key: 'bets_closed', agent: null, priority: PRIORITY.PHASE, text: 'Bets are locked — no more wagers! The crew steps up to the vault.' },
-  { key: 'race_start', agent: null, priority: PRIORITY.PHASE, text: "And they're off! Three crooks, one vault, no mercy!" },
-  { key: 'no_crack', agent: null, priority: PRIORITY.PHASE, text: "Time's up! The vault holds — nobody cracked it this round." },
+  { key: 'new_round', agent: null, priority: PRIORITY.PHASE, text: 'A new round begins!' },
+  { key: 'bets_open', agent: null, priority: PRIORITY.PHASE, text: 'Bets are open — place your chips!' },
+  { key: 'bets_closed', agent: null, priority: PRIORITY.PHASE, text: 'Bets are locked!' },
+  { key: 'race_start', agent: null, priority: PRIORITY.PHASE, text: "And they're off!" },
+  { key: 'no_crack', agent: null, priority: PRIORITY.PHASE, text: "Time's up — the vault holds!" },
   // per-agent milestones
   ...perAgent('gemini'),
   ...perAgent('deepseek'),
