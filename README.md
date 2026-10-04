@@ -206,9 +206,12 @@ npm test         # the full test suite
 
 1. `npm start` on the machine driving the projector. Open `http://localhost:3000/`
    (the **observer dashboard**) on the big screen.
-2. Players open `http://<that-machine-ip>:3000/play.html` on their phones (shown
-   on the dashboard footer), enter an alias, and **join**.
-3. Host clicks **OPEN BETTING**. Players pick a safecracker and place chips; the
+2. Players scan the join QR on the dashboard (press **Q** to show it full
+   screen), enter an alias, and **join**. The QR points at this machine's LAN
+   address, or at `PUBLIC_URL` if you set one (a tunnel or deployed domain).
+3. Press **H** (or the **HOST** tab in the bottom-right corner) to open the host
+   desk, which stays off the projected page until you need it. Host clicks
+   **OPEN BETTING**. Players pick a safecracker and place chips; the
    odds and pot update live on the big screen.
 4. Host clicks **LOCK & START**. Bets freeze, the race runs, milestones stream,
    the announcer calls it, and the vault **cracks** on the win.
@@ -225,16 +228,16 @@ npm test         # the full test suite
 
 ### Replay (the bulletproof demo path)
 
-Click **▶ REPLAY** on the dashboard (or `POST /api/replay`). It streams the
+Click **REPLAY** on the host desk (or `POST /api/replay`). It streams the
 committed `recordings/demo-clean.jsonl` through the same bus — identical to a
 live run, with **no models and no network**. Use this on stage if WiFi or an API
 is flaky. Record your own clean run with `npm run record:demo`.
 
 ### Announcer
 
-Click **🔊 ANNOUNCER: OFF → ON** once (browsers require a click before audio).
-The big screen then plays the pre-generated voice lines; a `📣` caption always
-shows the current call even when muted.
+Click **ANNOUNCER: OFF → ON** on the host desk once (browsers require a click
+before audio). The big screen then plays the pre-generated voice lines; the
+**CREW RADIO** caption always shows the current call even when muted.
 
 ---
 

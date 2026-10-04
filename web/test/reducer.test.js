@@ -29,6 +29,14 @@ test('reasoning tokens accumulate on the right agent', () => {
   assert.equal(s.agents.gemini.reasoning.length, 0);
 });
 
+test('the note counter keeps climbing after the reasoning log is full', () => {
+  const s = initialState();
+  for (let i = 0; i < 65; i++) reduce(s, ev('reasoning_token', 'haiku', { text: `line ${i}` }));
+  assert.equal(s.agents.haiku.reasoning.length, 60);
+  assert.equal(s.agents.haiku.reasoning.at(-1), 'line 64');
+  assert.equal(s.agents.haiku.notes, 65);
+});
+
 test('submitted records the finding and reaches the final stage', () => {
   const s = initialState();
   reduce(s, ev('submitted', 'haiku', { finding: '/etc/shadow creds' }));

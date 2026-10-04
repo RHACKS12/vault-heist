@@ -1,33 +1,36 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="preload">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Place Your Cut — Vault Heist</title>
   <meta name="description" content="Join the Vault Heist crew. Pick an AI safecracker, place your chips, and follow the firmware investigation." />
+  <meta name="theme-color" content="#dcc5a1" />
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+  <link rel="preload" href="/assets/fonts/Bungee-Regular.ttf" as="font" type="font/ttf" crossorigin />
   <link rel="stylesheet" href="/styles.css" />
+  <!-- Sections start hidden for the entrance animation; never stay hidden if a script fails. -->
+  <script>setTimeout(() => document.documentElement.classList.remove('preload'), 2500);</script>
 </head>
 <body class="play-shell">
   <a class="skip-link" href="#player-main">Skip to your cut</a>
   <div class="paper play">
-    <div class="site-bar">
-      <a class="brand" href="/" aria-label="Vault Heist — live dashboard">VAULT HEIST</a>
-      <span class="edition">ROWDYHACKS XII / THE HEIST IS ON</span>
+    <div class="site-bar" data-reveal>
+      <a class="brand" href="/" aria-label="Vault Heist — live dashboard"><img src="/assets/vault-mark.svg" alt="" width="30" height="30" /> VAULT HEIST</a>
+      <span class="conn" id="conn" role="status" aria-label="Live connection: connecting">CONNECTING</span>
     </div>
-    <header class="case-header play-intro">
-      <div class="case-no">CASE FILE <span>No. XII</span> / CREW ENTRY</div>
-      <h1 class="case-title"><span>PLACE</span> <span>YOUR CUT.</span></h1>
+    <header class="case-header play-intro" data-reveal>
+      <div class="case-no">CASE FILE <span>No. XII</span> <span class="case-slash">/</span> CREW ENTRY</div>
+      <h1 class="case-title"><span>PLACE</span> <span>YOUR CUT<span class="title-period">.</span></span></h1>
       <p class="intro-copy">Three AI safecrackers. One hidden flaw in the firmware. Back the crew member you think will crack it first.</p>
       <div class="case-meta">
-        <span class="phase" id="phase" aria-label="Current phase">LOBBY</span>
+        <span class="phase-pill" id="phase" aria-label="Current phase">LOBBY</span>
         <span>POT <b id="pot">0</b></span>
-        <span class="conn" id="conn" role="status" aria-label="Live connection: connecting">CONNECTING</span>
       </div>
     </header>
 
     <main class="player-layout" id="player-main" tabindex="-1">
-      <aside class="player-brief" aria-labelledby="brief-title">
+      <aside class="player-brief" aria-labelledby="brief-title" data-reveal>
         <img class="player-vault" src="/assets/vault-mark.svg" width="360" height="360" alt="" />
         <p class="section-kicker">THE BRIEF</p>
         <h2 id="brief-title">A hunch. A stake.<br />A share of the haul.</h2>
@@ -36,46 +39,64 @@
           <li>Pick your safecracker when betting opens.</li>
           <li>Place your chips and watch the case unfold.</li>
         </ol>
-        <a class="text-link" href="/">View the live investigation <span aria-hidden="true">&rarr;</span></a>
+        <a class="text-link" href="/">View the live investigation <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#arrow-right" /></svg></a>
       </aside>
 
-      <div class="player-forms">
+      <div class="player-forms" data-reveal>
         <section class="card" id="joinView" aria-labelledby="join-title">
           <p class="section-kicker">CREW ADMISSION / 01</p>
           <h2 id="join-title">JOIN THE HEIST</h2>
           <p class="card-copy">Every crew member needs a name. Yours goes on the case file.</p>
-          <label class="field-label" for="name">YOUR ALIAS</label>
-          <input class="field" id="name" maxlength="24" placeholder="Enter your alias" autocomplete="off" aria-describedby="alias-hint" />
-          <p class="field-hint" id="alias-hint">Up to 24 characters. Your starting stack: 100 chips.</p>
-          <div class="row join-row"><button class="btn" id="joinBtn" type="button">JOIN THE CREW <span aria-hidden="true">&rarr;</span></button></div>
+          <form id="joinForm">
+            <label class="field-label" for="name">YOUR ALIAS</label>
+            <input class="field" id="name" maxlength="24" placeholder="Enter your alias" autocomplete="off" aria-describedby="alias-hint" enterkeyhint="go" />
+            <p class="field-hint" id="alias-hint">Up to 24 characters. Your starting stack: 500 chips.</p>
+            <div class="row join-row"><button class="btn red" id="joinBtn" type="submit">JOIN THE CREW <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#arrow-right" /></svg></button></div>
+          </form>
           <p class="ticket-footnote">ADMIT ONE / KEEP YOUR EYES ON THE VAULT</p>
         </section>
 
         <section class="card" id="betView" hidden aria-labelledby="bet-title">
           <p class="section-kicker">YOUR WAGER / 02</p>
           <h2 id="bet-title">BACK YOUR CREW</h2>
-          <div class="balance">YOUR STACK: <b id="balance">100</b> chips</div>
+          <div class="stack-row">
+            <div class="balance">STACK <b id="balance">100</b> CHIPS</div>
+            <div class="alias">ALIAS <b id="alias"></b></div>
+          </div>
           <div class="note" id="phaseNote" role="status" aria-live="polite" aria-atomic="true"></div>
           <div class="picks" id="picks" role="group" aria-label="Choose your safecracker"></div>
-          <div class="row bet-row">
-            <label for="amount">CHIPS</label>
-            <input class="field" type="number" id="amount" value="100" min="1" step="10" />
-            <button class="btn" id="betBtn" type="button">PLACE BET</button>
+          <div class="wager">
+            <label class="field-label" for="amount">CHIPS</label>
+            <div class="chip-row" role="group" aria-label="Quick amounts">
+              <button class="chip" type="button" data-chips="25">25</button>
+              <button class="chip" type="button" data-chips="50">50</button>
+              <button class="chip" type="button" data-chips="100">100</button>
+              <button class="chip all" type="button" data-chips="all">ALL IN</button>
+            </div>
+            <div class="row bet-row">
+              <input class="field" type="number" id="amount" value="50" min="1" step="5" inputmode="numeric" />
+              <button class="btn red" id="betBtn" type="button">PLACE BET</button>
+            </div>
           </div>
-          <div class="note" id="betStatus" role="status" aria-live="polite" aria-atomic="true"></div>
+          <div class="slip">
+            <div class="slip-stamp" id="slipStamp" hidden aria-hidden="true">PLACED</div>
+            <div class="note" id="betStatus" role="status" aria-live="polite" aria-atomic="true"></div>
+          </div>
         </section>
 
         <section class="card" id="resultView" hidden aria-labelledby="result-title">
           <p class="section-kicker">THE PAYOUT / 03</p>
           <h2 id="result-title">CASE CLOSED</h2>
+          <div class="result-stamp" id="resultStamp" aria-hidden="true"></div>
           <div class="result" id="resultText" role="status" aria-live="polite" aria-atomic="true"></div>
-          <div class="balance result-balance">NEW STACK: <b id="balance2">0</b> chips</div>
+          <div class="balance result-balance">NEW STACK <b id="balance2">0</b> CHIPS</div>
         </section>
       </div>
     </main>
     <footer class="player-footer"><span>VAULT HEIST / ROWDYHACKS XII</span><span>THE HEIST IS ON.</span></footer>
   </div>
 
+  <script src="/vendor/gsap.min.js"></script>
   <script type="module" src="/play.js"></script>
 </body>
 </html>

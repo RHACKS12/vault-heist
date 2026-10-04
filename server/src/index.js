@@ -21,6 +21,7 @@ import { Recorder } from './recorder.js';
 import { Replayer, listRecordings } from './replayer.js';
 import { Announcer } from './announcer/announcer.js';
 import { createServer } from './server.js';
+import { joinUrls } from './lan.js';
 import { DEFAULT_ROOTFS, WEB_ROOT, RECORDINGS_DIR, PORT, RACE_COST_CAP_USD, RACE_COOLDOWN_MS } from './config.js';
 import { loadAnswerKey, getRound } from './agents/answer.js';
 import { Race } from './agents/race.js';
@@ -130,6 +131,7 @@ const routes = {
   'GET /api/state': async () => ({
     phase: game.phase, round: game.round, agents: AGENTS,
     recording: recorder.recording, replaying: replayer.playing,
+    joinUrls: joinUrls({ port: boundPort }), // for the dashboard's join QR
     ...betting.snapshot(),
   }),
   'POST /api/join': async (body) => betting.join(body.name),
