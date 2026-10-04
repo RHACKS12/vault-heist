@@ -10,12 +10,15 @@
 //   host     -> POST /api/host/open, /api/host/lock (runs the race), /api/host/reset
 // Real agent models arrive in Milestone 3b (keys in .env); today the race runs
 // on mock providers.
+import path from 'node:path';
 import { EventBus } from './bus.js';
 import { Game } from './game.js';
 import { Sandbox } from './sandbox.js';
 import { Betting } from './betting.js';
+import { Recorder } from './recorder.js';
+import { Replayer, listRecordings } from './replayer.js';
 import { createServer } from './server.js';
-import { DEFAULT_ROOTFS, WEB_ROOT, PORT } from './config.js';
+import { DEFAULT_ROOTFS, WEB_ROOT, RECORDINGS_DIR, PORT } from './config.js';
 import { loadAnswerKey, getRound } from './agents/answer.js';
 import { Race } from './agents/race.js';
 import { mockSolver, mockWanderer } from './agents/providers/mock.js';
@@ -26,6 +29,8 @@ const bus = new EventBus();
 const game = new Game({ bus });
 const sandbox = new Sandbox(DEFAULT_ROOTFS);
 const betting = new Betting({ bus, agents: AGENTS });
+const recorder = new Recorder({ bus });
+const replayer = new Replayer({ bus });
 
 const answerKey = await loadAnswerKey('iotgoat');
 const round = getRound(answerKey); // default round: hardcoded-credentials
@@ -65,6 +70,9 @@ function requireHost(body) {
 function requirePhase(expected) {
   if (game.phase !== expected) throw httpError(`action not allowed in phase ${game.phase}`, 409);
 }
+function requireNotReplaying() {
+  if (replayer.playing) throw httpError('a replay is in progress', 409);
+}
 
 /** Full auto demo: bots join + bet, then lock + race (so the pot is populated). */
 async function runDemoRace() {
@@ -82,7 +90,9 @@ async function runDemoRace() {
 
 const routes = {
   'GET /api/state': async () => ({
-    phase: game.phase, round: game.round, agents: AGENTS, ...betting.snapshot(),
+    phase: game.phase, round: game.round, agents: AGENTS,
+    recording: recorder.recording, replaying: replayer.playing,
+    ...betting.snapshot(),
   }),
   'POST /api/join': async (body) => betting.join(body.name),
   'POST /api/bet': async (body) => {
@@ -90,14 +100,14 @@ const routes = {
     return betting.placeBet(body.playerId, body.agent, body.amount);
   },
   'POST /api/host/open': async (body) => {
-    requireHost(body);
+    requireHost(body); requireNotReplaying();
     if (game.phase === 'SETTLED') { game.reset(); betting.reset(game.round); }
     requirePhase('LOBBY');
     game.openBetting(); betting.openRound();
     return { phase: game.phase };
   },
   'POST /api/host/lock': async (body) => {
-    requireHost(body);
+    requireHost(body); requireNotReplaying();
     requirePhase('BETTING_OPEN');
     game.lockBets({ pot: betting.pot(), odds: betting.odds() });
     betting.lock();
@@ -109,7 +119,28 @@ const routes = {
     game.reset(); betting.reset(game.round);
     return { phase: game.phase };
   },
-  'POST /api/demo/race': async () => runDemoRace(),
+  'POST /api/demo/race': async () => { requireNotReplaying(); return runDemoRace(); },
+
+  // --- record & replay (Milestone 7) ---
+  'GET /api/recordings': async () => ({ recordings: await listRecordings(RECORDINGS_DIR) }),
+  'POST /api/record/start': async (body) => { requireHost(body); return recorder.start(body.label); },
+  'POST /api/record/stop': async (body) => {
+    requireHost(body);
+    const r = recorder.stop();
+    const saved = await recorder.save(RECORDINGS_DIR, `${r.label}-${Date.now()}`);
+    return { count: r.count, file: path.basename(saved.file) };
+  },
+  'POST /api/replay': async (body) => {
+    requireHost(body); requireNotReplaying();
+    if (racing) throw httpError('a race is in progress', 409);
+    const name = (body.name || 'demo-clean.jsonl').replace(/[^\w.-]/g, '');
+    const file = path.join(RECORDINGS_DIR, name.endsWith('.jsonl') ? name : `${name}.jsonl`);
+    const events = await replayer.loadFile(file).catch(() => { throw httpError(`recording not found: ${name}`, 404); });
+    // run the replay in the background; stream it to connected clients
+    replayer.play(events, { speed: Number(body.speed) || 1 }).catch((e) => console.error('[replay]', e.message));
+    return { started: true, name, events: events.length };
+  },
+  'POST /api/replay/stop': async (body) => { requireHost(body); replayer.stop(); return { stopped: true }; },
 };
 
 const server = createServer({ bus, game, sandbox, betting, port: PORT, webRoot: WEB_ROOT, routes });

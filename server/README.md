@@ -20,6 +20,8 @@ PORT=4000 npm start
 | `sandbox.js` | `Sandbox` — the four read-only firmware tools, jailed to one rootfs. |
 | `server.js` | `createServer()` — HTTP `/health`, command routes, WebSocket fan-out, and static hosting of the dashboard + player screen. |
 | `betting.js` | `Betting` — the pari-mutuel pool (join, bet, odds, lock, settle). |
+| `recorder.js` | `Recorder` — capture the event stream to a `.jsonl`. |
+| `replayer.js` | `Replayer` — re-emit a recording onto the bus at a watchable cadence. |
 | `index.js` | Wires it together, exposes the command API, and starts listening. |
 | `config.js` | Paths (`DEFAULT_ROOTFS`, `WEB_ROOT`) and `PORT`. |
 | `agents/` | The crew — see below. |
@@ -37,11 +39,25 @@ The lobby is driven over HTTP; live state fans out over the WebSocket.
 | `POST /api/host/lock` | `{token?}` | lock bets, run the race, settle the pot |
 | `POST /api/host/reset` | `{token?}` | `SETTLED` → `LOBBY` for a new round |
 | `POST /api/demo/race` | — | full auto demo: bots join + bet, then lock + race |
+| `GET /api/recordings` | — | list recorded runs in `recordings/` |
+| `POST /api/record/start` | `{label?, token?}` | start capturing the event stream |
+| `POST /api/record/stop` | `{token?}` | stop + save to `recordings/<label>-<ts>.jsonl` |
+| `POST /api/replay` | `{name?, speed?, token?}` | replay a recording (default `demo-clean.jsonl`) onto the bus |
+| `POST /api/replay/stop` | `{token?}` | stop the current replay |
 
 Host routes are gated by `HOST_TOKEN` when it is set in the environment.
 Pari-mutuel: `odds(agent) = pot / stakeOn(agent)`; the winner's backers split the
 whole pot in proportion to their stake; if nobody backed the winner (or no agent
 cracked it), every bet is refunded.
+
+## Record & replay (Milestone 7)
+
+Because every frontend is driven solely by the bus, a recorded run replays
+identically — the bulletproof demo path. Record a clean run with
+`npm run record:demo` (writes `recordings/demo-clean.jsonl`, committed), then on
+stage the host hits **REPLAY** (or `POST /api/replay`) and the dashboard streams
+it with no models and no network. Replay paces fast recordings out to a watchable
+cadence and prepends a lobby reset so clients start clean.
 
 ## Agents (the crew)
 

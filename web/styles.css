@@ -118,6 +118,8 @@ body {
 .host { display: flex; gap: 8px; flex-wrap: wrap; }
 .btn.ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--ink); }
 .btn.ghost:hover { background: var(--ink); color: var(--kraft); }
+.btn.rec-on { background: var(--red); color: #fff; border-color: var(--red); animation: recpulse 1s ease-in-out infinite; }
+@keyframes recpulse { 50% { opacity: 0.55; } }
 .agent-odds { margin-left: auto; text-align: center; line-height: 1.1; }
 .agent-odds b { color: var(--red); font-size: 15px; display: block; }
 .agent-odds span { font-size: 8px; letter-spacing: 1px; color: var(--ink-soft); }

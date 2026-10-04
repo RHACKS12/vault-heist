@@ -18,3 +18,7 @@ build/
 *.img
 *.img.gz
 *.sqfs
+
+# ad-hoc recordings; keep only the curated demo run
+recordings/*.jsonl
+!recordings/demo-clean.jsonl
