@@ -41,7 +41,7 @@ test('milestones and phases map to catalog keys', () => {
 test('lineFor returns the catalog entry; win line is high priority', () => {
   const win = lineFor({ type: EVENT_TYPES.WON, agent: 'deepseek' });
   assert.equal(win.key, 'won:deepseek');
-  assert.match(win.text, /winner/i);
+  assert.match(win.text, /cracked/i);
   assert.match(win.text, /DeepSeek/);
   assert.equal(win.priority, PRIORITY.WIN);
   assert.equal(lineFor({ type: EVENT_TYPES.EXPLORING, agent: 'gemini' }), null);
