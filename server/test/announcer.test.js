@@ -89,3 +89,31 @@ test('narrates replayed milestones too (derived layer)', async () => {
   await tick();
   assert.equal(announces.length, 1);
 });
+
+test('a re-submitting agent is announced only once per round (no spam)', async () => {
+  const { bus, announces } = harness();
+  for (let i = 0; i < 10; i++) {
+    bus.publish(createEvent({ source: SOURCES.AGENT, agent: 'openai', type: EVENT_TYPES.SUBMITTED, payload: { finding: 'guess' } }));
+  }
+  await tick();
+  const openaiSubmits = announces.filter((e) => e.payload.key === 'submitted:openai');
+  assert.equal(openaiSubmits.length, 1, 'ten submits collapse to one announcement');
+});
+
+test('once the round is won, later milestones are not announced', async () => {
+  const { bus, announces } = harness();
+  bus.publish(createEvent({ source: SOURCES.AGENT, agent: 'gemini', type: EVENT_TYPES.WON }));
+  bus.publish(createEvent({ source: SOURCES.AGENT, agent: 'openai', type: EVENT_TYPES.SUBMITTED }));
+  bus.publish(createEvent({ source: SOURCES.AGENT, agent: 'haiku', type: EVENT_TYPES.FOUND_DIR, payload: { dir: '/etc' } }));
+  await tick();
+  assert.equal(announces.length, 1);
+  assert.equal(announces[0].payload.key, 'won:gemini');
+});
+
+test('a new round resets de-dup state', async () => {
+  const { bus, announces } = harness();
+  bus.publish(createEvent({ round: 1, source: SOURCES.AGENT, agent: 'openai', type: EVENT_TYPES.SUBMITTED }));
+  bus.publish(createEvent({ round: 2, source: SOURCES.AGENT, agent: 'openai', type: EVENT_TYPES.SUBMITTED }));
+  await tick();
+  assert.equal(announces.filter((e) => e.payload.key === 'submitted:openai').length, 2);
+});

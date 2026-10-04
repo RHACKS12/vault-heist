@@ -25,6 +25,13 @@ export class Announcer {
     this.clips = clips instanceof Map ? clips : new Map(Object.entries(clips ?? {}));
     this.tts = tts;
     this._unsub = null;
+    // Per-round de-duplication: each line is announced at most once per round, and
+    // once someone WINS the round we go quiet. This stops an agent that re-calls
+    // submit() (e.g. gpt-4o-mini retrying a wrong answer) from spamming
+    // "… is making the call!", and stops stale milestones playing after the win.
+    this._roundNo = null;
+    this._announced = new Set();
+    this._won = false;
   }
 
   start() {
@@ -39,6 +46,19 @@ export class Announcer {
     if (event.source === SOURCES.ANNOUNCER) return; // never announce our own lines
     const line = lineFor(event);
     if (!line) return;
+
+    // Reset the per-round state when the round number changes.
+    if (event.round !== this._roundNo) {
+      this._roundNo = event.round;
+      this._announced = new Set();
+      this._won = false;
+    }
+    const isWin = line.key.startsWith('won:');
+    if (this._won && !isWin) return;          // quiet once the round is won
+    if (this._announced.has(line.key)) return; // say each line at most once per round
+    this._announced.add(line.key);            // claim it BEFORE any await (race-safe)
+    if (isWin) this._won = true;
+
     let clip = this.clips.get(line.key) ?? null;
     if (!clip && this.tts) { try { clip = await this.tts.synthesize(line.text); } catch { clip = null; } }
     this.bus.publish(createEvent({

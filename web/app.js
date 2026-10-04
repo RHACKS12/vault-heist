@@ -192,6 +192,8 @@ function announce(a) {
   els.announcer.textContent = `📣 ${a.text}`;                       // caption always shows
   els.announcer.classList.remove('flash'); void els.announcer.offsetWidth; els.announcer.classList.add('flash');
   if (!announcerOn) return;
+  if ((a.priority || 0) >= 3) audioQueue.length = 0;                 // a win preempts queued chatter
+  if (a.key && audioQueue.some((x) => x.key === a.key)) return;      // don't queue the same line twice
   audioQueue.push(a);
   audioQueue.sort((x, y) => (y.priority || 0) - (x.priority || 0)); // wins/submissions jump ahead
   while (audioQueue.length > 4) audioQueue.pop();                    // drop stale low-priority stragglers
