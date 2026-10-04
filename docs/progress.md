@@ -89,7 +89,7 @@ See `DESIGN.md` for the overall plan and `CONTRIBUTING.md` for the workflow.
   exclude `announce` events (recorder filters `source === 'announcer'`), and the
   existing `demo-clean.jsonl` needed no change. Verified: replaying it produced
   the full call ("And they're off!" → "DeepSeek just broke into the etc vault!" →
-  "We have a winner!") with captions. See `docs/announcer.png`.
+  "We have a winner!") with captions.
 - **7 new tests** (lines + pipeline + replay narration + no-loop).
 
 **Total tests: 69 green** (57 server + 12 web).
@@ -119,7 +119,7 @@ bulletproof, narrated demo — runs today with no keys.
   `npm run record:demo` (`server/scripts/record-demo.mjs`).
 - **Verified in a real browser**: on a fresh dashboard, clicking REPLAY streamed
   the recording through RACING to the cracked vault with the correct verdict —
-  visually identical to a live run. See `docs/replay.png`.
+  visually identical to a live run.
 
 **Total tests: 62 green** (50 server + 12 web).
 
@@ -165,8 +165,7 @@ the key-dependent ones.
   line on a win. The reducer gained betting state (**4 new tests**).
 - The pre-race lobby flow matches the plan: players bet → host locks → race.
   The flow was verified over HTTP (live odds, double-bet rejection, correct
-  payout) and in a real browser (dashboard lobby + player screen screenshots:
-  `docs/dashboard-lobby.png`, `docs/player.png`).
+  payout) and in a real browser (dashboard lobby + player screen).
 
 **Total tests: 53 green** (41 server + 12 web).
 
@@ -208,8 +207,7 @@ announcer), or Milestone 7 (record & replay).
   the whole thing is watchable in a browser with no keys.
 - **Verified in a real browser** (headless Chromium): clicked "Run demo race",
   watched phases → concurrent agents → milestones → `won` → `SETTLED`; the
-  dashboard rendered the cracked vault and DeepSeek's `/etc/shadow` finding. See
-  `docs/dashboard.png`.
+  dashboard rendered the cracked vault and DeepSeek's `/etc/shadow` finding.
 
 **Total tests: 42 green** (34 server + 8 web).
 
