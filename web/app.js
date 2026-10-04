@@ -85,7 +85,11 @@ function render() {
     const p = panels[def.id];
     p.el.classList.toggle('won', a.won);
     p.el.classList.toggle('refused', a.refused);
-    p.status.textContent = a.won ? 'CRACKED' : a.refused ? 'STOOD DOWN' : a.stage > 0 ? 'ON THE JOB' : '—';
+    p.el.classList.toggle('rejected', a.rejected && !a.won);
+    p.status.textContent = a.won ? 'CRACKED'
+      : a.refused ? 'STOOD DOWN'
+      : a.rejected ? (a.attemptsLeft === 0 ? 'OUT OF GUESSES' : `WRONG CALL · ${a.attemptsLeft} LEFT`)
+      : a.stage > 0 ? 'ON THE JOB' : '—';
     const o = state.odds?.[def.id];
     p.odds.textContent = o ? `×${o}` : '—';
     const n = state.counts?.[def.id] ?? 0;

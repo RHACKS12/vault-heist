@@ -100,3 +100,17 @@ test('phase_change to BETTING_OPEN opens betting', () => {
   reduce(s, { type: 'phase_change', payload: { to: 'BETTING_OPEN' }, round: 1 });
   assert.equal(s.bettingOpen, true);
 });
+
+test('a rejected submission is marked wrong and un-lights the submitted stage', () => {
+  const s = initialState();
+  reduce(s, ev('opened_file', 'openai'));
+  reduce(s, ev('submitted', 'openai', { finding: 'root has a weak password' }));
+  assert.equal(s.agents.openai.stage, 4);
+  reduce(s, ev('rejected', 'openai', { finding: 'root has a weak password', attemptsLeft: 2 }));
+  assert.equal(s.agents.openai.stage, 3);
+  assert.equal(s.agents.openai.rejected, true);
+  assert.equal(s.agents.openai.attemptsLeft, 2);
+  assert.equal(s.agents.openai.finding, 'root has a weak password');
+  reduce(s, ev('submitted', 'openai', { finding: '/etc/shadow iotgoatuser' }));
+  assert.equal(s.agents.openai.rejected, false, 'a new submission clears the wrong mark');
+});

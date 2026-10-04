@@ -90,6 +90,7 @@ export class AgentRunner {
           // Wrong answer. Cap the attempts so a model can't spin on submit().
           wrongSubmissions++;
           const attemptsLeft = this.maxWrongSubmissions - wrongSubmissions;
+          this._emit(EVENT_TYPES.REJECTED, { finding: submission, attemptsLeft });
           messages.push({ role: 'tool', toolCallId: call.id, name: 'submit', result: { ...verdict, attemptsLeft } });
           if (wrongSubmissions >= this.maxWrongSubmissions) {
             return { status: 'gave_up', submissions: wrongSubmissions };

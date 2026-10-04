@@ -14,7 +14,7 @@ export const CREW = [
 export const STAGES = ['exploring', 'found the directory', 'opened the file', 'submitted'];
 
 function freshAgent(def) {
-  return { id: def.id, name: def.name, strategy: def.strategy, stage: 0, reasoning: [], finding: null, won: false, refused: false };
+  return { id: def.id, name: def.name, strategy: def.strategy, stage: 0, reasoning: [], finding: null, rejected: false, attemptsLeft: null, won: false, refused: false };
 }
 
 export function initialState() {
@@ -69,7 +69,11 @@ export function reduce(state, event) {
     case 'found_dir': if (a) a.stage = Math.max(a.stage, 2); break;
     case 'opened_file': if (a) a.stage = Math.max(a.stage, 3); break;
     case 'submitted':
-      if (a) { a.stage = Math.max(a.stage, 4); a.finding = event.payload?.finding ?? a.finding; }
+      if (a) { a.stage = Math.max(a.stage, 4); a.finding = event.payload?.finding ?? a.finding; a.rejected = false; }
+      break;
+    case 'rejected':
+      // A wrong call un-lights the "submitted" segment; the finding stays, marked wrong.
+      if (a) { a.stage = Math.min(a.stage, 3); a.rejected = true; a.attemptsLeft = event.payload?.attemptsLeft ?? null; }
       break;
     case 'reasoning_token':
       if (a && event.payload?.text) {
