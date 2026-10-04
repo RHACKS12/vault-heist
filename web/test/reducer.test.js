@@ -21,12 +21,30 @@ test('milestones advance a crew member monotonically', () => {
   assert.equal(s.agents.gemini.stage, 3);
 });
 
+test('milestones remember the directory and file the agent reached', () => {
+  const s = initialState();
+  reduce(s, ev('found_dir', 'openai', { dir: '/etc' }));
+  reduce(s, ev('opened_file', 'openai', { file: '/etc/shadow' }));
+  reduce(s, ev('found_dir', 'openai')); // a payload-less repeat keeps what we know
+  assert.equal(s.agents.openai.dir, '/etc');
+  assert.equal(s.agents.openai.file, '/etc/shadow');
+  assert.equal(s.agents.gemini.file, null);
+});
+
 test('reasoning tokens accumulate on the right agent', () => {
   const s = initialState();
   reduce(s, ev('reasoning_token', 'openai', { text: 'first' }));
   reduce(s, ev('reasoning_token', 'openai', { text: 'second' }));
   assert.deepEqual(s.agents.openai.reasoning, ['first', 'second']);
   assert.equal(s.agents.gemini.reasoning.length, 0);
+});
+
+test('the note counter keeps climbing after the reasoning log is full', () => {
+  const s = initialState();
+  for (let i = 0; i < 65; i++) reduce(s, ev('reasoning_token', 'haiku', { text: `line ${i}` }));
+  assert.equal(s.agents.haiku.reasoning.length, 60);
+  assert.equal(s.agents.haiku.reasoning.at(-1), 'line 64');
+  assert.equal(s.agents.haiku.notes, 65);
 });
 
 test('submitted records the finding and reaches the final stage', () => {

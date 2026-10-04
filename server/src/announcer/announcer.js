@@ -11,7 +11,7 @@
 // null and the dashboard falls back to the browser's built-in speech, so the
 // announcer is audible even before anything is generated. An optional `tts`
 // provider can synthesize keys that aren't pre-generated (not used by default).
-import { SOURCES, EVENT_TYPES, createEvent } from '../events.js';
+import { SOURCES, EVENT_TYPES, PHASES, createEvent } from '../events.js';
 import { lineFor } from './lines.js';
 
 export class Announcer {
@@ -47,8 +47,12 @@ export class Announcer {
     const line = lineFor(event);
     if (!line) return;
 
-    // Reset the per-round state when the round number changes.
-    if (event.round !== this._roundNo) {
+    // Reset the per-round state when the round number changes, or when a round
+    // starts over: a replay re-sends its recorded round number (usually 1), and
+    // the AUTO DEMO opens betting without leaving the current round, so neither
+    // would be narrated after an earlier win in that round.
+    const to = event.type === EVENT_TYPES.PHASE_CHANGE ? event.payload?.to : null;
+    if (event.round !== this._roundNo || to === PHASES.LOBBY || to === PHASES.BETTING_OPEN) {
       this._roundNo = event.round;
       this._announced = new Set();
       this._won = false;

@@ -14,7 +14,9 @@ export const CREW = [
 export const STAGES = ['exploring', 'found the directory', 'opened the file', 'submitted'];
 
 function freshAgent(def) {
-  return { id: def.id, name: def.name, strategy: def.strategy, stage: 0, reasoning: [], finding: null, rejected: false, attemptsLeft: null, won: false, refused: false };
+  // `notes` counts every reasoning line ever received; `reasoning` keeps only the
+  // newest 60, so its length stops changing once full and can't signal new lines.
+  return { id: def.id, name: def.name, strategy: def.strategy, stage: 0, dir: null, file: null, reasoning: [], notes: 0, finding: null, rejected: false, attemptsLeft: null, won: false, refused: false };
 }
 
 export function initialState() {
@@ -66,8 +68,8 @@ export function reduce(state, event) {
       break;
     }
     case 'exploring': if (a) a.stage = Math.max(a.stage, 1); break;
-    case 'found_dir': if (a) a.stage = Math.max(a.stage, 2); break;
-    case 'opened_file': if (a) a.stage = Math.max(a.stage, 3); break;
+    case 'found_dir': if (a) { a.stage = Math.max(a.stage, 2); a.dir = event.payload?.dir ?? a.dir; } break;
+    case 'opened_file': if (a) { a.stage = Math.max(a.stage, 3); a.file = event.payload?.file ?? a.file; } break;
     case 'submitted':
       if (a) { a.stage = Math.max(a.stage, 4); a.finding = event.payload?.finding ?? a.finding; a.rejected = false; }
       break;
@@ -78,6 +80,7 @@ export function reduce(state, event) {
     case 'reasoning_token':
       if (a && event.payload?.text) {
         a.reasoning.push(event.payload.text);
+        a.notes += 1;
         if (a.reasoning.length > 60) a.reasoning.shift();
       }
       break;

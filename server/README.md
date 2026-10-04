@@ -39,7 +39,7 @@ The lobby is driven over HTTP; live state fans out over the WebSocket.
 
 | Route | Body | Purpose |
 | --- | --- | --- |
-| `GET /api/state` | — | current phase, round, pot, odds, totals, counts, players |
+| `GET /api/state` | — | current phase, round, pot, odds, totals, counts, players, and `joinUrls` (LAN or `PUBLIC_URL` addresses for the join QR) |
 | `POST /api/join` | `{name}` | join the lobby → `{playerId, balance}` (500 starting chips) |
 | `POST /api/bet` | `{playerId, agent, amount}` | place one bet (only while `BETTING_OPEN`) |
 | `POST /api/host/open` | `{token?}` | open betting (`LOBBY`/`SETTLED` → `BETTING_OPEN`) |

@@ -117,3 +117,24 @@ test('a new round resets de-dup state', async () => {
   await tick();
   assert.equal(announces.filter((e) => e.payload.key === 'submitted:openai').length, 2);
 });
+
+test('replaying the same round again is narrated again', async () => {
+  const { bus, announces } = harness();
+  const replay = () => {
+    bus.publish({ ...createEvent({ round: 1, source: SOURCES.GAME, type: EVENT_TYPES.PHASE_CHANGE, payload: { to: PHASES.LOBBY, replay: true } }), replay: true });
+    bus.publish({ ...createEvent({ round: 1, source: SOURCES.AGENT, agent: 'openai', type: EVENT_TYPES.WON }), replay: true });
+  };
+  replay();
+  replay();
+  await tick();
+  assert.equal(announces.filter((e) => e.payload.key === 'won:openai').length, 2);
+});
+
+test('a race that opens betting in an already-won round is narrated', async () => {
+  const { bus, announces } = harness();
+  bus.publish(createEvent({ round: 1, source: SOURCES.AGENT, agent: 'openai', type: EVENT_TYPES.WON })); // e.g. a replay
+  bus.publish(createEvent({ round: 1, source: SOURCES.GAME, type: EVENT_TYPES.PHASE_CHANGE, payload: { to: PHASES.BETTING_OPEN } }));
+  bus.publish(createEvent({ round: 1, source: SOURCES.AGENT, agent: 'gemini', type: EVENT_TYPES.FOUND_DIR, payload: { dir: '/etc' } }));
+  await tick();
+  assert.deepEqual(announces.map((e) => e.payload.key), ['won:openai', 'bets_open', 'found:gemini']);
+});
