@@ -16,7 +16,7 @@ test('every catalog key is unique and every entry has text + priority', () => {
     assert.ok(e.text && typeof e.text === 'string');
     assert.ok(typeof e.priority === 'number');
   }
-  assert.equal(CATALOG.length, 15); // 3 phase + 4 milestones x 3 agents
+  assert.equal(CATALOG.length, 17); // 5 phase/game + 4 milestones x 3 agents
 });
 
 // --- event -> key mapping (pure) ---
@@ -28,7 +28,9 @@ test('silent events map to no key', () => {
 
 test('milestones and phases map to catalog keys', () => {
   assert.equal(keyFor({ type: EVENT_TYPES.PHASE_CHANGE, payload: { to: PHASES.RACING } }), 'race_start');
-  assert.equal(keyFor({ type: EVENT_TYPES.PHASE_CHANGE, payload: { to: PHASES.BETTING_OPEN } }), 'lobby');
+  assert.equal(keyFor({ type: EVENT_TYPES.PHASE_CHANGE, payload: { to: PHASES.BETTING_OPEN } }), 'bets_open');
+  assert.equal(keyFor({ type: EVENT_TYPES.PHASE_CHANGE, payload: { to: PHASES.BETS_LOCKED } }), 'bets_closed');
+  assert.equal(keyFor({ type: EVENT_TYPES.PHASE_CHANGE, payload: { to: PHASES.LOBBY } }), 'new_round');
   assert.equal(keyFor({ type: EVENT_TYPES.FOUND_DIR, agent: 'gemini', payload: { dir: '/etc' } }), 'found:gemini');
   assert.equal(keyFor({ type: EVENT_TYPES.WON, agent: 'deepseek' }), 'won:deepseek');
   // settled only speaks when nobody won

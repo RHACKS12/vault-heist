@@ -136,7 +136,7 @@ These are the exact tools the agents (Milestone 3) will be given — not a shell
 ## Announcer (Milestone 6)
 
 The announcer is a **derived presentation layer**. `announcer/catalog.js` is the
-predefined set of every line — 3 phase calls + 4 milestones × 3 agents = 15,
+predefined set of every line — 5 phase/game calls + 4 milestones × 3 agents = 17,
 each with a stable `key`. `announcer/lines.js` maps a milestone/phase event to a
 catalog key (only `found_dir`, `opened_file`, `submitted`, `won`, and the fixed
 "place your bets / and they're off / nobody cracked it" calls — tool noise is
