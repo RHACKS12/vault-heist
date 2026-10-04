@@ -3,64 +3,87 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CASE FILE No. XII — Vault Heist</title>
+  <meta name="description" content="Three AI safecrackers race to find a hidden vulnerability. Follow the crew and place your cut in Vault Heist, a RowdyHacks XII project." />
+  <title>Vault Heist — The Heist Is On</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to the case file</a>
   <div class="paper">
+    <nav class="site-bar" aria-label="Main navigation">
+      <a class="brand" href="/" aria-label="Vault Heist dashboard"><img src="/assets/vault-mark.svg" alt="" width="30" height="30" /> VAULT HEIST</a>
+      <span class="edition">ROWDYHACKS XII <span>/</span> SAN ANTONIO, TX</span>
+      <a class="text-link" href="/play.html">Place your cut <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#arrow-right" /></svg></a>
+    </nav>
     <header class="case-header">
-      <div class="case-no">CASE FILE <span>No. XII</span></div>
-      <h1 class="case-title">THE VAULT HEIST</h1>
+      <div class="case-no">CASE FILE <span>No. XII</span> <span class="case-slash">/</span> LIVE OPERATIONS</div>
+      <h1 class="case-title">THE VAULT HEIST<span class="title-period">.</span></h1>
+      <p class="intro-copy">Three AI safecrackers. One hidden vulnerability. Who gets there first?</p>
       <div class="case-meta">
         <span class="round">ROUND <b id="round">1</b></span>
         <span class="phase" id="phase">LOBBY</span>
-        <span class="conn" id="conn" title="connection">●</span>
+        <span class="conn" id="conn" role="status">CONNECTING</span>
       </div>
-      <div class="stamp" id="stamp">CONFIDENTIAL</div>
+      <div class="stamp" id="stamp">CONFIDENTIAL<span>FOR THE CREW ONLY</span></div>
     </header>
 
-    <section class="stage">
-      <div class="vault" id="vault" data-state="idle">
-        <svg viewBox="0 0 220 220" aria-hidden="true">
-          <circle class="vault-body" cx="110" cy="110" r="96" />
-          <circle class="vault-ring" cx="110" cy="110" r="78" />
-          <g class="vault-dial" id="dial">
-            <circle cx="110" cy="110" r="46" />
-            <line x1="110" y1="110" x2="110" y2="70" />
-            <circle class="pin" cx="110" cy="110" r="6" />
-          </g>
-          <g class="cracks" aria-hidden="true">
-            <polyline points="110,110 60,40" /><polyline points="110,110 180,55" />
-            <polyline points="110,110 170,170" /><polyline points="110,110 45,160" />
-          </g>
-        </svg>
-        <div class="vault-label" id="vaultLabel">THE MARK</div>
-        <div class="cracked-stamp">CRACKED</div>
+    <main id="main" tabindex="-1">
+      <div class="operation">
+        <section class="stage" aria-labelledby="targetTitle">
+          <div class="file-tab">FILE 01 <span>//</span> THE MARK</div>
+          <div class="target-layout">
+            <div class="vault" id="vault" data-state="idle">
+              <svg viewBox="0 0 220 220" aria-hidden="true">
+                <rect class="vault-housing" x="8" y="8" width="204" height="204" rx="3" />
+                <path class="vault-hardware" d="M5 52h18v26H5zM5 142h18v26H5zM198 95h17v30h-17z" />
+                <circle class="vault-body" cx="110" cy="110" r="85" />
+                <circle class="vault-ring" cx="110" cy="110" r="71" />
+                <g class="vault-ticks"><path d="M110 34v11M110 175v11M34 110h11M175 110h11M56 56l8 8M156 156l8 8M56 164l8-8M156 64l8-8" /></g>
+                <g class="vault-dial" id="dial">
+                  <circle cx="110" cy="110" r="44" />
+                  <path d="M110 76v68M76 110h68M86 86l48 48M86 134l48-48" />
+                  <line x1="110" y1="110" x2="110" y2="65" />
+                  <circle class="pin" cx="110" cy="110" r="12" />
+                </g>
+                <g class="vault-bolts"><circle cx="22" cy="22" r="3"/><circle cx="198" cy="22" r="3"/><circle cx="22" cy="198" r="3"/><circle cx="198" cy="198" r="3"/></g>
+                <g class="cracks" aria-hidden="true"><polyline points="110,110 60,40" /><polyline points="110,110 180,55" /><polyline points="110,110 170,170" /><polyline points="110,110 45,160" /></g>
+              </svg>
+              <div class="vault-label" id="vaultLabel">THE MARK</div>
+              <div class="cracked-stamp">CRACKED</div>
+            </div>
+            <div class="target-copy">
+              <p class="section-kicker">THE JOB</p>
+              <h2 id="targetTitle">Find the flaw.<br />Crack the vault.</h2>
+              <p>The crew is searching the same firmware for a planted vulnerability. Follow their findings. Back your safecracker.</p>
+              <div class="verdict" id="verdict" role="status"></div>
+            </div>
+          </div>
+          <div class="dispatch"><span class="dispatch-label">CREW RADIO</span><div class="announcer" id="announcer" aria-live="polite"></div></div>
+        </section>
+        <aside class="lobby bankroll" aria-labelledby="bankrollTitle">
+          <div class="section-kicker" id="bankrollTitle">FILE 02 // THE BANKROLL</div>
+          <div class="pot"><span>ON THE TABLE</span><div><b id="pot">0</b> <span>CHIPS</span></div></div>
+          <div class="players"><svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#users" /></svg> CREW OF BETTORS <b id="players">0</b></div>
+          <div class="join-hint">Got a hunch? Back your crew.<a class="btn join-link" href="/play.html">PLACE YOUR CUT <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#arrow-right" /></svg></a><code id="joinUrl">/play.html</code></div>
+        </aside>
       </div>
-      <div class="verdict" id="verdict"></div>
-      <div class="announcer" id="announcer" aria-live="polite"></div>
-    </section>
 
-    <section class="crew" id="crew"><!-- agent panels injected here --></section>
+      <section class="crew-section" aria-labelledby="crewTitle">
+        <div class="section-heading"><div><p class="section-kicker">FILE 03 // THE SAFECRACKERS</p><h2 id="crewTitle">MEET THE CREW</h2></div><span class="section-note">3 AGENTS / ONE WAY OUT</span></div>
+        <div class="crew" id="crew"><!-- agent panels injected here --></div>
+      </section>
 
-    <footer class="takings">
-      <div class="lobby">
-        <span class="players">CREW OF BETTORS: <b id="players">0</b></span>
-        <span class="pot">THE POT: <b id="pot">0</b></span>
-        <span class="join-hint">place your cut at <code id="joinUrl">/play.html</code></span>
-      </div>
-      <div class="host">
-        <button id="hostOpen" class="btn">OPEN BETTING</button>
-        <button id="hostLock" class="btn">LOCK &amp; START</button>
-        <button id="hostReset" class="btn">NEW ROUND</button>
-        <button id="runRace" class="btn ghost">▶ auto demo</button>
-        <button id="recBtn" class="btn ghost">● REC</button>
-        <button id="replayBtn" class="btn ghost">▶ REPLAY</button>
-        <button id="muteBtn" class="btn ghost">🔊 ANNOUNCER: OFF</button>
-      </div>
-    </footer>
+      <footer class="takings">
+        <div class="control-heading"><p class="section-kicker">FILE 04 // CALL THE SHOTS</p><h2>HOST DESK</h2><p>Open the table. Lock the bets.<br />Let the crew work.</p></div>
+        <div class="host">
+          <div class="host-primary"><button id="hostOpen" class="btn">OPEN BETTING</button><button id="hostLock" class="btn">LOCK &amp; START</button><button id="hostReset" class="btn">NEW ROUND</button></div>
+          <div class="host-secondary"><button id="runRace" class="btn ghost">AUTO DEMO</button><button id="recBtn" class="btn ghost">RECORD</button><button id="replayBtn" class="btn ghost">REPLAY</button><button id="muteBtn" class="btn ghost" aria-pressed="false">ANNOUNCER: OFF</button></div>
+        </div>
+      </footer>
+    </main>
+    <footer class="page-footer"><span>THE HEIST IS ON.</span><span>A ROWDYHACKS XII PROJECT / OCT. 3–4</span><a href="/play.html">Join the crew <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#arrow-right" /></svg></a></footer>
   </div>
-
   <script type="module" src="/app.js"></script>
 </body>
 </html>

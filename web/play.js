@@ -24,8 +24,10 @@ const picksEl = $('picks');
 for (const def of CREW) {
   const b = document.createElement('button');
   b.className = 'pick';
+  b.type = 'button';
   b.dataset.agent = def.id;
-  b.innerHTML = `<span>${def.name}</span><span style="font-size:11px;color:var(--ink-soft)">${def.strategy}</span><span class="pick-odds">—</span>`;
+  b.setAttribute('aria-pressed', 'false');
+  b.innerHTML = `<span class="pick-avatar" aria-hidden="true">${def.name[0]}</span><span class="pick-info"><span class="pick-name">${def.name}</span><span class="pick-strategy">${def.strategy}</span></span><span class="pick-odds">—</span>`;
   b.addEventListener('click', () => { if (canBet()) { selected = def.id; render(); } });
   picksEl.appendChild(b);
 }
@@ -38,6 +40,7 @@ function renderPicks() {
   for (const b of picksEl.children) {
     const id = b.dataset.agent;
     b.classList.toggle('sel', id === selected);
+    b.setAttribute('aria-pressed', String(id === selected));
     b.querySelector('.pick-odds').textContent = state.odds?.[id] ? `×${state.odds[id]}` : '—';
     b.disabled = !canBet();
   }
@@ -54,10 +57,10 @@ function render() {
 
   // phase guidance
   const note = {
-    LOBBY: 'Waiting for the host to open betting…',
-    BETTING_OPEN: myBetRound === state.round ? 'Bet placed. Waiting for the host to lock & start.' : 'Bets are OPEN — pick a safecracker and place your chips.',
-    BETS_LOCKED: 'Bets locked. And they’re off!',
-    RACING: 'The crew is racing…',
+    LOBBY: 'Stand by. Waiting for the host to open betting.',
+    BETTING_OPEN: myBetRound === state.round ? 'Your chips are in. Waiting for the host to lock bets and start the heist.' : 'Betting is open. Pick a safecracker and place your chips.',
+    BETS_LOCKED: 'Bets locked. The heist is about to begin.',
+    RACING: 'The crew is on the case. Follow the live investigation on the dashboard.',
     SETTLED: '',
   }[state.phase] ?? '';
   $('phaseNote').textContent = note;
@@ -72,7 +75,7 @@ function render() {
     const mine = state.payouts.find((p) => p.playerId === store.id);
     const rt = $('resultText');
     if (!mine) { rt.textContent = 'You sat this round out.'; rt.className = 'result'; }
-    else if (mine.won) { rt.textContent = `🏆 Your crew cracked it — you took ${mine.payout} chips!`; rt.className = 'result win'; }
+    else if (mine.won) { rt.textContent = `Your crew cracked it. Your take: ${mine.payout} chips.`; rt.className = 'result win'; }
     else if (state.winner) { rt.textContent = `Your pick didn’t crack it. ${state.winner} took the round.`; rt.className = 'result lose'; }
     else { rt.textContent = `No one cracked it — your ${mine.payout} chips were refunded.`; rt.className = 'result'; }
     $('balance2').textContent = store.balance;
@@ -96,12 +99,12 @@ $('betBtn').addEventListener('click', async () => {
     if (res.ok) {
       store.setBalance(res.balance);
       myBetRound = state.round;
-      $('betStatus').textContent = `✓ ${amount} chips on ${selected}.`;
+      $('betStatus').textContent = `Bet confirmed: ${amount} chips on ${selected}.`;
       render();
     } else {
-      $('betStatus').textContent = `✗ ${res.error}`;
+      $('betStatus').textContent = `Bet not placed: ${res.error}`;
     }
-  } catch { $('betStatus').textContent = '✗ network error'; }
+  } catch { $('betStatus').textContent = 'Bet not placed: network error. Check your connection.'; }
 });
 
 // ---- event stream ----
@@ -124,7 +127,7 @@ function onEvent(ev, replay = false) {
 function connect() {
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
   const ws = new WebSocket(`${proto}://${location.host}`);
-  ws.onopen = () => { $('conn').classList.add('live'); };
+  ws.onopen = () => { $('conn').classList.add('live'); $('conn').textContent = 'LIVE'; $('conn').setAttribute('aria-label', 'Live connection: connected'); };
   ws.onmessage = (e) => {
     try {
       const msg = JSON.parse(e.data);
@@ -135,7 +138,7 @@ function connect() {
       } else onEvent(msg);
     } catch { /* ignore bad frame */ }
   };
-  ws.onclose = () => { $('conn').classList.remove('live'); setTimeout(connect, 1500); };
+  ws.onclose = () => { $('conn').classList.remove('live'); $('conn').textContent = 'RECONNECTING'; $('conn').setAttribute('aria-label', 'Live connection: reconnecting'); setTimeout(connect, 1500); };
   ws.onerror = () => ws.close();
 }
 

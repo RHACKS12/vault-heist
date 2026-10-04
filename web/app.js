@@ -11,19 +11,20 @@ for (const def of CREW) {
   const el = document.createElement('div');
   el.className = 'agent';
   el.innerHTML = `
+    <div class="agent-file"><span>DOSSIER / 0${CREW.indexOf(def) + 1}</span><div class="agent-status">STANDING BY</div></div>
     <div class="agent-head">
-      <div class="avatar">${def.name[0]}</div>
+      <div class="avatar" aria-hidden="true">${def.name[0]}</div>
       <div>
-        <div class="agent-name">${def.name}</div>
+        <h3 class="agent-name">${def.name}</h3>
         <div class="agent-strategy">${def.strategy}</div>
       </div>
       <div class="agent-odds"><b>—</b><span>odds</span></div>
-      <div class="agent-status">—</div>
     </div>
     <div class="agent-bets" hidden></div>
     <div class="bar">${STAGES.map(() => '<div class="seg"></div>').join('')}</div>
     <div class="bar-labels">${STAGES.map((s) => `<span>${s}</span>`).join('')}</div>
-    <div class="reasoning"></div>
+    <div class="log-label">FIELD NOTES <span>LIVE TRANSCRIPT</span></div>
+    <div class="reasoning" tabindex="0" role="region" aria-label="${def.name} field notes"></div>
     <div class="finding" hidden></div>`;
   crewEl.appendChild(el);
   panels[def.id] = {
@@ -89,7 +90,7 @@ function render() {
     p.status.textContent = a.won ? 'CRACKED'
       : a.refused ? 'STOOD DOWN'
       : a.rejected ? (a.attemptsLeft === 0 ? 'OUT OF GUESSES' : `WRONG CALL · ${a.attemptsLeft} LEFT`)
-      : a.stage > 0 ? 'ON THE JOB' : '—';
+      : a.stage > 0 ? 'ON THE JOB' : 'STANDING BY';
     const o = state.odds?.[def.id];
     p.odds.textContent = o ? `×${o}` : '—';
     const n = state.counts?.[def.id] ?? 0;
@@ -125,7 +126,7 @@ function payoutLine() {
 function connect() {
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
   const ws = new WebSocket(`${proto}://${location.host}`);
-  ws.onopen = () => { els.conn.classList.add('live'); els.conn.classList.remove('down'); };
+  ws.onopen = () => { els.conn.classList.add('live'); els.conn.classList.remove('down'); els.conn.textContent = 'LIVE'; };
   ws.onmessage = (ev) => {
     try {
       const msg = JSON.parse(ev.data);
@@ -134,7 +135,7 @@ function connect() {
       render();
     } catch { /* ignore bad frame */ }
   };
-  ws.onclose = () => { els.conn.classList.remove('live'); els.conn.classList.add('down'); setTimeout(connect, 1500); };
+  ws.onclose = () => { els.conn.classList.remove('live'); els.conn.classList.add('down'); els.conn.textContent = 'RECONNECTING'; setTimeout(connect, 1500); };
   ws.onerror = () => ws.close();
 }
 
@@ -165,10 +166,10 @@ let recording = false;
 els.recBtn.addEventListener('click', async () => {
   if (!recording) {
     await host('/api/record/start', { label: 'live' });
-    recording = true; els.recBtn.textContent = '■ STOP REC'; els.recBtn.classList.add('rec-on');
+    recording = true; els.recBtn.textContent = 'STOP RECORDING'; els.recBtn.classList.add('rec-on');
   } else {
     const r = await host('/api/record/stop');
-    recording = false; els.recBtn.textContent = '● REC'; els.recBtn.classList.remove('rec-on');
+    recording = false; els.recBtn.textContent = 'RECORD'; els.recBtn.classList.remove('rec-on');
     if (r?.file) els.recBtn.title = `saved ${r.file} (${r.count} events)`;
   }
 });
@@ -176,9 +177,9 @@ els.recBtn.addEventListener('click', async () => {
 // replay the committed clean run (the bulletproof demo path)
 els.replayBtn.addEventListener('click', async () => {
   els.replayBtn.disabled = true;
-  els.replayBtn.textContent = '▶ REPLAYING…';
+  els.replayBtn.textContent = 'REPLAYING…';
   await host('/api/replay', { name: 'demo-clean.jsonl' });
-  setTimeout(() => { els.replayBtn.disabled = false; els.replayBtn.textContent = '▶ REPLAY'; }, 6000);
+  setTimeout(() => { els.replayBtn.disabled = false; els.replayBtn.textContent = 'REPLAY'; }, 6000);
 });
 
 // ---- announcer (audio cues) ----
@@ -192,7 +193,8 @@ let speaking = false;
 
 els.muteBtn.addEventListener('click', () => {
   announcerOn = !announcerOn;
-  els.muteBtn.textContent = `🔊 ANNOUNCER: ${announcerOn ? 'ON' : 'OFF'}`;
+  els.muteBtn.textContent = `ANNOUNCER: ${announcerOn ? 'ON' : 'OFF'}`;
+  els.muteBtn.setAttribute('aria-pressed', String(announcerOn));
   els.muteBtn.classList.toggle('rec-on', announcerOn);
   if (announcerOn) { try { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; window.speechSynthesis.speak(u); } catch { /* no TTS */ } }
   else { audioQueue.length = 0; try { window.speechSynthesis?.cancel(); } catch { /* ignore */ } speaking = false; }
@@ -200,7 +202,7 @@ els.muteBtn.addEventListener('click', () => {
 
 function announce(a) {
   if (!a?.text) return;
-  els.announcer.textContent = `📣 ${a.text}`;                       // caption always shows
+  els.announcer.textContent = a.text;                              // caption always shows
   els.announcer.classList.remove('flash'); void els.announcer.offsetWidth; els.announcer.classList.add('flash');
   if (!announcerOn) return;
   if ((a.priority || 0) >= 3) audioQueue.length = 0;                 // a win preempts queued chatter
