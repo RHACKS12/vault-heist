@@ -89,4 +89,7 @@ test('an agent that keeps submitting wrong gives up after 3 attempts', async () 
   assert.equal(result.status, 'gave_up');
   assert.equal(result.submissions, 3);
   assert.equal(events.filter((e) => e.type === EVENT_TYPES.SUBMITTED).length, 3, 'exactly 3 submit attempts');
+  const rejected = events.filter((e) => e.type === EVENT_TYPES.REJECTED);
+  assert.deepEqual(rejected.map((e) => e.payload.attemptsLeft), [2, 1, 0], 'each wrong call is announced');
+  assert.equal(rejected[0].payload.finding, 'not it');
 });

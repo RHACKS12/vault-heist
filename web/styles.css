@@ -102,6 +102,8 @@ body {
 .reasoning p { margin: 0 0 4px; white-space: pre-wrap; word-break: break-word; }
 .reasoning p::before { content: "› "; color: #8a7; }
 .finding { margin: 0 12px 12px; padding: 8px; border: 1.5px solid var(--red); color: var(--red-deep); font-size: 12px; background: #e9d9ae; }
+.agent.rejected .finding { border-style: dashed; opacity: 0.6; text-decoration: line-through; }
+.agent.rejected .agent-status { text-decoration: none; opacity: 0.8; }
 
 /* ---------- takings ---------- */
 .takings { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 22px; border-top: 3px double var(--ink); padding-top: 14px; flex-wrap: wrap; }

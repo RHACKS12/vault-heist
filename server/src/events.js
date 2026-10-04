@@ -28,6 +28,7 @@ export const EVENT_TYPES = Object.freeze({
   FOUND_DIR: 'found_dir',
   OPENED_FILE: 'opened_file',
   SUBMITTED: 'submitted',
+  REJECTED: 'rejected', // judge said the submission was wrong; agent may retry
   REASONING_TOKEN: 'reasoning_token', // streamed thought chunk for the panel
   WON: 'won',
   REFUSED: 'refused',
