@@ -215,8 +215,13 @@ npm test         # the full test suite
 5. The pot pays out to the winner's backers; each player sees their result on
    their phone. Host clicks **NEW ROUND** to go again.
 
-> Host controls can be gated with a `HOST_TOKEN` in `.env`; set it, then the
-> dashboard needs `localStorage.hostToken` to match. Unset = open (fine for dev).
+> **Before exposing the server publicly, set `HOST_TOKEN` in `.env`.** It gates
+> every control action — open, **lock & start a real race** (which spends API
+> money), reset, record, replay, and the demo race — so random visitors can't
+> drive the agents. Players can still join and bet freely. The dashboard prompts
+> for the token on the first host action and remembers it. Unset = all controls
+> open (fine for local dev only). Races are also throttled by `RACE_COOLDOWN_MS`
+> (default 8s) and bounded by the `RACE_COST_CAP_USD` ($2) spend cap.
 
 ### Replay (the bulletproof demo path)
 

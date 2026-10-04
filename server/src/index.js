@@ -21,7 +21,7 @@ import { Recorder } from './recorder.js';
 import { Replayer, listRecordings } from './replayer.js';
 import { Announcer } from './announcer/announcer.js';
 import { createServer } from './server.js';
-import { DEFAULT_ROOTFS, WEB_ROOT, RECORDINGS_DIR, PORT, RACE_COST_CAP_USD } from './config.js';
+import { DEFAULT_ROOTFS, WEB_ROOT, RECORDINGS_DIR, PORT, RACE_COST_CAP_USD, RACE_COOLDOWN_MS } from './config.js';
 import { loadAnswerKey, getRound } from './agents/answer.js';
 import { Race } from './agents/race.js';
 import { mockSolver, mockWanderer } from './agents/providers/mock.js';
@@ -58,6 +58,7 @@ const answerKey = await loadAnswerKey('iotgoat');
 const round = getRound(answerKey); // default round: hardcoded-credentials
 
 let racing = false;
+let lastRaceEndedAt = 0;
 
 /** The scripted mock crew — keyless and deterministic, so the demo + replay
  *  path always produces a clean, exciting race. */
@@ -86,6 +87,8 @@ function buildRealRace() {
 /** RACING -> run the crew (given its builder) -> settle the pot on the winner. */
 async function startRaceAndSettle(buildRace) {
   if (racing) throw httpError('a race is already in progress', 409);
+  const waitMs = lastRaceEndedAt + RACE_COOLDOWN_MS - Date.now();
+  if (waitMs > 0) throw httpError(`race cooldown — try again in ${Math.ceil(waitMs / 1000)}s`, 429);
   racing = true;
   try {
     game.startRace();
@@ -94,6 +97,7 @@ async function startRaceAndSettle(buildRace) {
     return { winner, cost };
   } finally {
     racing = false;
+    lastRaceEndedAt = Date.now();
   }
 }
 
@@ -153,7 +157,7 @@ const routes = {
     game.reset(); betting.reset(game.round);
     return { phase: game.phase };
   },
-  'POST /api/demo/race': async () => { requireNotReplaying(); return runDemoRace(); },
+  'POST /api/demo/race': async (body) => { requireHost(body); requireNotReplaying(); return runDemoRace(); },
 
   // --- record & replay (Milestone 7) ---
   'GET /api/recordings': async () => ({ recordings: await listRecordings(RECORDINGS_DIR) }),

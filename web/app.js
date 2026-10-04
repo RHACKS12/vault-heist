@@ -136,9 +136,16 @@ function connect() {
 
 // ---- host controls ----
 const hostToken = () => { try { return localStorage.getItem('hostToken') || ''; } catch { return ''; } };
+const setHostToken = (t) => { try { localStorage.setItem('hostToken', t); } catch { /* ignore */ } };
 async function host(path, extra = {}) {
   try {
-    return await (await fetch(path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token: hostToken(), ...extra }) })).json();
+    const res = await fetch(path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token: hostToken(), ...extra }) });
+    // When the server requires a host token, prompt once and retry.
+    if (res.status === 403) {
+      const entered = prompt('Host token required to control the game:');
+      if (entered) { setHostToken(entered.trim()); return host(path, extra); }
+    }
+    return await res.json();
   } catch { return null; }
 }
 els.hostOpen.addEventListener('click', () => host('/api/host/open'));
@@ -146,7 +153,7 @@ els.hostLock.addEventListener('click', () => host('/api/host/lock'));
 els.hostReset.addEventListener('click', () => host('/api/host/reset'));
 els.runRace.addEventListener('click', async () => {
   els.runRace.disabled = true;
-  try { await fetch('/api/demo/race', { method: 'POST' }); } catch { /* ignore */ }
+  try { await host('/api/demo/race'); } catch { /* ignore */ }
 });
 
 // record toggle
