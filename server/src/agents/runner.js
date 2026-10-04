@@ -18,7 +18,7 @@ import { SOURCES, EVENT_TYPES, createEvent } from '../events.js';
 import { ALL_TOOLS } from './tools.js';
 
 export class AgentRunner {
-  constructor({ agent, round = 1, bus, provider, session, onSubmit, shouldStop = () => false, system, task, maxSteps = 24, costTracker = null, model = null }) {
+  constructor({ agent, round = 1, bus, provider, session, onSubmit, shouldStop = () => false, system, task, maxSteps = 24, costTracker = null, model = null, maxWrongSubmissions = 3 }) {
     this.agent = agent;
     this.round = round;
     this.bus = bus;
@@ -31,6 +31,7 @@ export class AgentRunner {
     this.maxSteps = maxSteps;
     this.costTracker = costTracker;
     this.model = model ?? provider?.model ?? null;
+    this.maxWrongSubmissions = maxWrongSubmissions;
   }
 
   async run() {
@@ -38,6 +39,7 @@ export class AgentRunner {
       { role: 'system', text: this.system },
       { role: 'user', text: this.task },
     ];
+    let wrongSubmissions = 0;
 
     for (let i = 0; i < this.maxSteps; i++) {
       if (this.shouldStop()) return { status: 'stopped', steps: i };
@@ -81,9 +83,18 @@ export class AgentRunner {
           const submission = call.args?.finding ?? call.args?.answer ?? '';
           this._emit(EVENT_TYPES.SUBMITTED, { finding: submission });
           const verdict = await this.onSubmit(submission);
-          messages.push({ role: 'tool', toolCallId: call.id, name: 'submit', result: verdict });
-          if (verdict.correct) return { status: 'correct', won: !!verdict.won, submission };
-          continue; // wrong answer: the model sees the verdict and keeps looking
+          if (verdict.correct) {
+            messages.push({ role: 'tool', toolCallId: call.id, name: 'submit', result: verdict });
+            return { status: 'correct', won: !!verdict.won, submission };
+          }
+          // Wrong answer. Cap the attempts so a model can't spin on submit().
+          wrongSubmissions++;
+          const attemptsLeft = this.maxWrongSubmissions - wrongSubmissions;
+          messages.push({ role: 'tool', toolCallId: call.id, name: 'submit', result: { ...verdict, attemptsLeft } });
+          if (wrongSubmissions >= this.maxWrongSubmissions) {
+            return { status: 'gave_up', submissions: wrongSubmissions };
+          }
+          continue; // let the model see the verdict (and attemptsLeft) and try again
         }
 
         let result;
