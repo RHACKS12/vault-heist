@@ -27,7 +27,7 @@ function perAgent(agent) {
 /** Every announcer line, enumerable and pre-generatable. */
 export const CATALOG = Object.freeze([
   // phase / game calls (fixed, no agent)
-  { key: 'new_round', agent: null, priority: PRIORITY.PHASE, text: 'Fresh firmware on the table — a brand new round begins!' },
+  { key: 'new_round', agent: null, priority: PRIORITY.PHASE, text: 'A brand new round begins!' },
   { key: 'bets_open', agent: null, priority: PRIORITY.PHASE, text: 'Bets are now open! Pick your safecracker and lay down your chips.' },
   { key: 'bets_closed', agent: null, priority: PRIORITY.PHASE, text: 'Bets are locked — no more wagers! The crew steps up to the vault.' },
   { key: 'race_start', agent: null, priority: PRIORITY.PHASE, text: "And they're off! Three crooks, one vault, no mercy!" },
