@@ -31,6 +31,7 @@ export const EVENT_TYPES = Object.freeze({
   REASONING_TOKEN: 'reasoning_token', // streamed thought chunk for the panel
   WON: 'won',
   REFUSED: 'refused',
+  COST_CAP: 'cost_cap', // race-wide spend ceiling hit; remaining agents stop
   // betting
   PLAYER_JOINED: 'player_joined',
   BET_PLACED: 'bet_placed',

@@ -19,3 +19,7 @@ export const RECORDINGS_DIR = path.join(REPO_ROOT, 'recordings');
 
 /** HTTP + WebSocket port. */
 export const PORT = Number(process.env.PORT ?? 3000);
+
+/** Hard per-race spend ceiling in USD, shared across all agents in a race.
+ *  Set RACE_COST_CAP_USD=0 (or negative) to disable the cap. */
+export const RACE_COST_CAP_USD = Number(process.env.RACE_COST_CAP_USD ?? 2);

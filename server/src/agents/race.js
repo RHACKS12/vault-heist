@@ -11,6 +11,7 @@ import { AgentRunner } from './runner.js';
 import { makeJudge } from './judge.js';
 import { systemPrompt, taskPrompt } from './prompts.js';
 import { roundTarget } from './answer.js';
+import { CostTracker, DEFAULT_COST_CAP_USD } from './cost.js';
 
 export class Race {
   /**
@@ -18,7 +19,7 @@ export class Race {
    *          budget?:object, maxSteps?:number}} opts
    *   `round` is a resolved round object (from getRound) including its accept criteria.
    */
-  constructor({ bus, game, sandbox, round, agents, budget, maxSteps = 24 }) {
+  constructor({ bus, game, sandbox, round, agents, budget, maxSteps = 24, costCapUsd = DEFAULT_COST_CAP_USD }) {
     if (!bus) throw new Error('Race requires a bus');
     if (!sandbox) throw new Error('Race requires a sandbox');
     if (!round) throw new Error('Race requires a round');
@@ -31,6 +32,7 @@ export class Race {
     this.maxSteps = maxSteps;
     this.winner = null;
     this._judge = makeJudge(round);
+    this.cost = new CostTracker({ capUsd: costCapUsd });
   }
 
   /** Called by a runner when its agent submits. Decides the global win. */
@@ -56,8 +58,17 @@ export class Race {
   /** Run all agents concurrently. Resolves when every runner has finished. */
   async run() {
     const target = roundTarget(this.round);
-    const shouldStop = () => this.winner !== null;
     const roundNo = this.game?.round ?? 1;
+    // Stop every runner once someone wins OR the race-wide spend cap is hit.
+    const shouldStop = () => {
+      if (this.cost.markCappedOnce()) {
+        this.bus.publish(createEvent({
+          round: roundNo, source: SOURCES.AGENT, agent: null,
+          type: EVENT_TYPES.COST_CAP, payload: this.cost.snapshot(),
+        }));
+      }
+      return this.winner !== null || this.cost.exceeded();
+    };
 
     const runs = this.agents.map((a) => {
       const session = new AgentSession({
@@ -74,6 +85,8 @@ export class Race {
         system: systemPrompt(),
         task: taskPrompt({ strategy: a.strategy }),
         maxSteps: this.maxSteps,
+        costTracker: this.cost,
+        model: a.model ?? a.provider?.model ?? null,
       });
       return runner.run().then((r) => ({ agent: a.agent, ...r }));
     });
@@ -84,6 +97,6 @@ export class Race {
     if (!this.winner && this.game?.phase === 'RACING') {
       this.game.settle({ winner: null });
     }
-    return { winner: this.winner, results };
+    return { winner: this.winner, results, cost: this.cost.snapshot() };
   }
 }
