@@ -438,6 +438,22 @@ html:not(.has-gsap) .vault[data-state="racing"] .vault-dial { transform-origin: 
 .chip.all::before { border-color: #1a141055; }
 .chip:active:not(:disabled) { transform: translateY(3px); box-shadow: inset 0 0 0 .22rem currentColor, inset 0 0 0 .35rem var(--card), 0 0 0 transparent; }
 .chip:disabled { opacity: .4; cursor: not-allowed; }
+/* the stack: tapped chips pile up by colour, seen side-on like a casino rack */
+.stack { position: relative; display: flex; align-items: flex-end; justify-content: center; width: 100%; min-height: 7.6rem; margin-bottom: .7rem; padding: .7rem .7rem 1.7rem; border: 1px dashed #9c8b73; background: radial-gradient(120% 90% at 50% 100%, #315d3b26, transparent 70%), #e9dfcf; cursor: pointer; transition: border-color .2s; }
+.stack:hover:not(:disabled):not(.empty) { border-color: var(--red); }
+.stack.empty { cursor: default; }
+.stack:disabled { opacity: .55; cursor: not-allowed; }
+.piles { display: flex; align-items: flex-end; gap: 1rem; }
+.pile { --c: var(--red); --edge: var(--red-deep); display: flex; flex-direction: column-reverse; align-items: center; }
+.pile.c50 { --c: var(--ink); --edge: #000; }
+.pile.c100 { --c: var(--go); --edge: #1d3a24; }
+.pile.codd { --c: var(--kraft-2); --edge: #8d7148; }
+.pile i { display: block; width: 3.6rem; height: .62rem; margin-top: 2px; border-radius: .3rem / .32rem; box-shadow: 0 2px 0 var(--edge); background: repeating-linear-gradient(90deg, var(--c) 0 .42rem, var(--card) .42rem .62rem, var(--c) .62rem 1.04rem); }
+.pile i:nth-child(even) { translate: .12rem 0; background-position: .3rem 0; }
+.pile i:nth-child(3n) { translate: -.1rem 0; }
+.pile b { order: -1; margin-top: .35rem; font-size: .6rem; letter-spacing: .06em; color: var(--ink-soft); white-space: nowrap; }
+.stack-hint { position: absolute; left: 0; right: 0; bottom: .45rem; font-size: .58rem; font-weight: 700; letter-spacing: .14em; color: var(--ink-faint); }
+.stack.empty .stack-hint { bottom: 50%; translate: 0 50%; }
 .bet-row { flex-wrap: wrap; }
 .bet-row .field { width: 6rem; min-width: 0; flex: 0 0 auto; }
 .bet-row .btn { flex: 1; min-width: 8rem; min-height: 3rem; }

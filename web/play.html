@@ -67,14 +67,18 @@
           <div class="picks" id="picks" role="group" aria-label="Choose your safecracker"></div>
           <div class="wager">
             <label class="field-label" for="amount">CHIPS</label>
-            <div class="chip-row" role="group" aria-label="Quick amounts">
-              <button class="chip" type="button" data-chips="25">25</button>
-              <button class="chip" type="button" data-chips="50">50</button>
-              <button class="chip" type="button" data-chips="100">100</button>
+            <div class="chip-row" role="group" aria-label="Add chips to your stack">
+              <button class="chip" type="button" data-chips="25" aria-label="Add 25 chips">+25</button>
+              <button class="chip" type="button" data-chips="50" aria-label="Add 50 chips">+50</button>
+              <button class="chip" type="button" data-chips="100" aria-label="Add 100 chips">+100</button>
               <button class="chip all" type="button" data-chips="all">ALL IN</button>
             </div>
+            <button class="stack" id="stack" type="button" aria-label="Your stack is empty">
+              <span class="piles" id="piles" aria-hidden="true"></span>
+              <span class="stack-hint" id="stackHint">TAP CHIPS TO STACK THEM</span>
+            </button>
             <div class="row bet-row">
-              <input class="field" type="number" id="amount" value="50" min="1" step="5" inputmode="numeric" />
+              <input class="field" type="number" id="amount" value="0" min="0" step="5" inputmode="numeric" aria-label="Chips to bet" />
               <button class="btn red" id="betBtn" type="button">PLACE BET</button>
             </div>
           </div>
