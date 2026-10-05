@@ -4,9 +4,12 @@ Three AI "safecrackers" (Gemini, OpenAI and Claude Haiku) race to find a planted
 **known** vulnerability in real router firmware while the crowd bets play-chips
 on who cracks it first. Built for RowdyHacks XII.
 
+🏆 **Winner of the Best Use of Gemini API track at RowdyHacks XII.** See the
+[Devpost submission](https://devpost.com/software/rowdy-s-secuirty-agents).
+
 [![Watch the demo on YouTube](https://img.youtube.com/vi/9adzStKijQI/maxresdefault.jpg)](https://youtu.be/9adzStKijQI)
 
-**▶ [Watch the demo](https://youtu.be/9adzStKijQI)** · **[Try it live](https://vault-heist-cde6381d1113.herokuapp.com/)**
+**▶ [Watch the demo](https://youtu.be/9adzStKijQI)** · **[Try it live](https://vault-heist-cde6381d1113.herokuapp.com/)** · **[Devpost](https://devpost.com/software/rowdy-s-secuirty-agents)**
 
 ![The dashboard after a race](docs/screenshot-dashboard.png)
 
